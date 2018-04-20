@@ -76,7 +76,7 @@ public class MainController {
         selectionRepository = null;
         config = new Config();
         Optional<File> lastDir = config.getLastDir();
-        if (lastDir.isPresent()) {
+        if (lastDir.isPresent() && lastDir.get().exists()) {
             directoryChooser.setInitialDirectory(lastDir.get());
         }
     }
