@@ -154,6 +154,12 @@ public class MainController {
                     selection = new Selection(file.get().getName(), Selection.SelectionMode.ALL, new Point2D(event.getX(), event.getY()));
                 }
                 selectionRepository.addOrPushTop(selection);
+            } else {
+                if(selectionRepository.hasCurrentSelection()
+                        && !selectionRepository.getCurrentSelection().hasMinDimensions()) {
+                    selectionRepository.removeLastSelection();
+                    repaint();
+                }
             }
         }
     }

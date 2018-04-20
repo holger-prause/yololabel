@@ -38,6 +38,10 @@ public class Selection {
         rectangle = new Rectangle(sourcePoint.getX(), sourcePoint.getY(), 0, 0);
     }
 
+    public boolean hasMinDimensions() {
+        return rectangle.getWidth() > MIN_WIDTH && rectangle.getHeight() > MIN_HEIGHT;
+    }
+
     public void adjust(MouseEvent event) {
         final double sourceX = rectangle.getX();
         final double sourceY = rectangle.getY();
