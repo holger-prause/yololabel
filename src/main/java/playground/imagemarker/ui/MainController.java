@@ -87,6 +87,7 @@ public class MainController {
         File selectedDirectory = directoryChooser.showDialog(stage);
         if (selectedDirectory != null) {
             config.setLastDir(selectedDirectory);
+            directoryChooser.setInitialDirectory(selectedDirectory);
             imageDisplay.setDisable(false);
             selectionRepository = new SelectionRepository(selectedDirectory);
             fileRepository = new FileRepository(selectedDirectory);
