@@ -60,7 +60,7 @@ public class MainController {
     public MainController() {
         directoryChooser = new DirectoryChooser();
         directoryChooser.setInitialDirectory(Paths.get(".").toFile());
-        directoryChooser.setTitle("Select Directory with pictures Picture");
+        directoryChooser.setTitle("Select Directory with pictures");
     }
 
     @FXML
