@@ -1,0 +1,21 @@
+Image Marker Help
+
+A Tool for creating annotation files for open cv.
+Features:
+* Multiple Selections
+* Resizing of Selections
+* Autosave after browsing
+* Restoring selections from annotation file
+
+Usage:
+Select a directory from the dialog
+Start selection with left click and move cursor, another left click ends the selection.
+Resizing is done with left click on the selection.
+Zooming in and out with mouse wheel
+
+Keybindings
+A - previous file
+D - next file
+W - delete last selection
+S - force save selections
+
