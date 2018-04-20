@@ -5,42 +5,38 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
-import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
-import javafx.stage.Window;
-import playground.imagemarker.Main;
+import playground.imagemarker.io.Config;
 import playground.imagemarker.io.FileRepository;
 import playground.imagemarker.io.SelectionRepository;
 
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
  * Created by Holger on 07.04.2018.
  */
 public class MainController {
-    private final DirectoryChooser directoryChooser;
 
+    private final double INITIAL_SCALE = 1.0;
+    private final double SCALE_DELTA_FACTOR = 0.5;
+    private final String BASE_TITLE = "Image Marker";
     private final int MAX_IMAGE_WIDTH = 1280;
     private final int MAX_IMAGE_HEIGHT = 720;
 
@@ -51,16 +47,15 @@ public class MainController {
     protected Canvas imageDisplay;
 
     private Image selectedImage;
-
-    private final double INITIAL_SCALE = 1.0;
-    private final double SCALE_DELTA_FACTOR = 0.5;
-    private final String BASE_TITLE = "Image Marker";
+    private final DirectoryChooser directoryChooser;
 
     private DoubleProperty scale = new SimpleDoubleProperty(INITIAL_SCALE);
     private boolean selectionActive = false;
 
     private SelectionRepository selectionRepository;
     private FileRepository fileRepository;
+
+    private Config config;
 
     public MainController() {
         directoryChooser = new DirectoryChooser();
@@ -79,6 +74,11 @@ public class MainController {
         selectedImage = null;
         selectionActive = false;
         selectionRepository = null;
+        config = new Config();
+        Optional<File> lastDir = config.getLastDir();
+        if (lastDir.isPresent()) {
+            directoryChooser.setInitialDirectory(lastDir.get());
+        }
     }
 
     @FXML
@@ -86,6 +86,7 @@ public class MainController {
         Stage stage = (Stage) imageDisplay.getScene().getWindow();
         File selectedDirectory = directoryChooser.showDialog(stage);
         if (selectedDirectory != null) {
+            config.setLastDir(selectedDirectory);
             imageDisplay.setDisable(false);
             selectionRepository = new SelectionRepository(selectedDirectory);
             fileRepository = new FileRepository(selectedDirectory);
