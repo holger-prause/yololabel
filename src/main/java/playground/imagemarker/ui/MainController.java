@@ -195,6 +195,7 @@ public class MainController {
             selectedImage = new Image(selectedFile.toURI().toString());
             imageDisplay.setWidth(selectedImage.getWidth());
             imageDisplay.setHeight(selectedImage.getHeight());
+            scale.setValue(INITIAL_SCALE);
             selectionRepository.setCurrentSelections(selectedFile.getName());
 
             Stage stage = (Stage) imageDisplay.getScene().getWindow();
