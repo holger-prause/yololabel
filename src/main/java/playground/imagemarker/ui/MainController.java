@@ -216,6 +216,7 @@ public class MainController {
 
     private void repaint() {
         GraphicsContext graphicsContext2D = imageDisplay.getGraphicsContext2D();
+        graphicsContext2D.clearRect(0, 0, imageDisplay.getWidth(), imageDisplay.getHeight());
         graphicsContext2D.drawImage(selectedImage, 0, 0);
         for (Selection selection : selectionRepository.getCurrentSelections()) {
             drawSelection(selection);
