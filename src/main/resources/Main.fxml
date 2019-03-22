@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+
+<?import java.net.URL?>
+<Pane fx:id="root" onKeyReleased="#onKeyReleased" style="-fx-background-color: green;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="playground.imagemarker.ui.MainController">
+    <children>
+        <BorderPane style="-fx-background-color: blue;">
+            <top>
+                <MenuBar fx:id="menuBar" minHeight="30.0" style="-fx-background-color: grey;" BorderPane.alignment="CENTER">
+                    <menus>
+                  <Menu mnemonicParsing="false" text="Classifier">
+                    <items>
+                      <MenuItem mnemonicParsing="false" onAction="#onClassifierSelected" text="Set Classifier" />
+                    </items>
+                  </Menu>
+                        <Menu text="File">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#onDirectorySelected" text="Open Directory" />
+                            </items>
+                        </Menu>
+                        <Menu mnemonicParsing="false" text="Help">
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#onHelpClicked" text="Info" />
+                            </items>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+            </top>
+            <center>
+                <ScrollPane fx:id="scrollPane" prefHeight="720.0" prefWidth="1280.0" BorderPane.alignment="CENTER">
+                    <content>
+                        <Group>
+                            <children>
+                                <Canvas fx:id="imageDisplay" onMouseClicked="#onMouseClicked" onMouseMoved="#onMouseMoved" onScroll="#onMouseScroll" pickOnBounds="true">
+                                </Canvas>
+                            </children>
+                        </Group>
+                    </content>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </children>
+    <stylesheets>
+        <URL value="@Main.css" />
+    </stylesheets>
+</Pane>
