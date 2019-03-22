@@ -98,24 +98,20 @@ public class MainController implements Initializable {
     }
 
     public void adjustUI(WindowEvent event) {
-
-
         imageDisplay.getScene().widthProperty().addListener((observable, oldValue, newValue)
                 -> {
-            double scrolPaneW = calcScrollpaneWidth() -20;
-            scrollPane.setPrefWidth(scrolPaneW);
-            scrollPane.setMaxWidth(scrolPaneW);
-            //scrollPaneContent.setMinWidth(scrolPaneW - SCROLLBAR_HEIGHT);
-            System.err.println("width change");
+            double spW = calcScrollpaneWidth();
+            scrollPane.setPrefWidth(spW);
+            scrollPane.setMaxWidth(spW);
+            scrollPaneContent.setMinWidth(spW - SCROLLBAR_HEIGHT);
         });
 
         imageDisplay.getScene().heightProperty().addListener((observable, oldValue, newValue)
                 -> {
-            double spH = calcScrollpaneHeight() - 20;
+            double spH = calcScrollpaneHeight();
             scrollPane.setPrefHeight(spH);
             scrollPane.setMaxHeight(spH);
-            //scrollPaneContent.setMinHeight(spH - SCROLLBAR_WIDTH);
-
+            scrollPaneContent.setMinHeight(spH - SCROLLBAR_WIDTH);
         });
 
         selectionRepository = new SelectionRepository(new File("C:\\development\\dataset\\open_images_lp_validation\\exclude"));
@@ -217,7 +213,6 @@ public class MainController implements Initializable {
                 scale.setValue(INITIAL_SCALE);
             }
         }
-        System.err.println("new w after scaling "+ imageDisplay.getWidth() + " ");
     }
 
     @FXML
