@@ -1,0 +1,19 @@
+.scroll-pane .scroll-bar:vertical {
+    -fx-unit-increment: 26 ;
+    -fx-block-increment: 26 ;
+    -fx-pref-width: 20px;
+}
+
+.scroll-pane .scroll-bar:horizontal {
+    -fx-unit-increment: 26 ;
+    -fx-block-increment: 26 ;
+    -fx-pref-height: 20px;
+}
+
+.scroll-pane {
+    -fx-padding: 0px;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}

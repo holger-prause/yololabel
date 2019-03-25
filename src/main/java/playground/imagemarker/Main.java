@@ -9,6 +9,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import playground.imagemarker.ui.MainController;
+import playground.imagemarker.ui.StageManager;
 import wrapper.LibLoader;
 
 import java.io.IOException;
@@ -29,20 +30,20 @@ public class Main extends Application {
 
 
             //set some inital width and height for window
-/*
+
             Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
             stage.setX(bounds.getMinX());
             stage.setY(bounds.getMinY());
-            stage.setWidth(bounds.getWidth() -200 );
-            stage.setHeight(bounds.getHeight() -200);
-*/
+            stage.setWidth(bounds.getWidth());
+            stage.setHeight(bounds.getHeight());
 
             //do ui adjustments after scene is available
             //in the initialize method the scene is null
             MainController controller = loader.getController();
             stage.setOnShown(controller::adjustUI);
 
-
+            StageManager stageManager = StageManager.getInstance();
+            stageManager.setPrimaryStage(stage);
 
             stage.show();
             root.requestFocus();
