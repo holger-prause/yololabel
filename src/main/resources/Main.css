@@ -17,3 +17,11 @@
 .scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
+
+.labelDialog {
+	-fx-padding: 10px;
+}
+
+.spacerVertical {
+	-fx-min-height: 10px;
+}

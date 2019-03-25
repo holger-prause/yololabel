@@ -1,10 +1,11 @@
 package playground.imagemarker.util;
 
 import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.input.MouseEvent;
 import playground.imagemarker.ui.BBox;
 import playground.imagemarker.ui.handler.ImageViewManager;
-import wrapper.BoundingBox;
+
 
 /**
  * Created by holger on 24.03.2019.
@@ -70,9 +71,14 @@ public class BBoxUtil {
 
         return returnType;
     }
+    
+    public static boolean isWithinBBox(BBox bBox, MouseEvent mouseEvent) {
+    	Rectangle2D rectangle = new Rectangle2D(bBox.getX(), bBox.getY(), bBox.getW(), bBox.getH());
+    	return rectangle.contains(new Point2D(mouseEvent.getX(), mouseEvent.getY()));
+    }
 
     private static boolean isCornerOverlap(Point2D corner, MouseEvent mouseEvent) {
-        int delta = ImageViewManager.BBOX_BORDER_WITH + 2;
+        int delta = 4;
         double distX = Math.abs(mouseEvent.getX() - corner.getX());
         double distY = Math.abs(mouseEvent.getY() - corner.getY());
         return distX <= delta && distY <= delta;

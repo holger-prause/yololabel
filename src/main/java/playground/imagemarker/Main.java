@@ -1,5 +1,7 @@
 package playground.imagemarker;
 
+import java.io.IOException;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -7,12 +9,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import playground.imagemarker.ui.MainController;
 import playground.imagemarker.ui.StageManager;
-import wrapper.LibLoader;
-
-import java.io.IOException;
 
 /**
  * Created by Holger on 07.04.2018.
@@ -55,7 +53,6 @@ public class Main extends Application {
     public static void main(String[] args) {
         //OpenCvLoader openCvLoader = new OpenCvLoader();
         //openCvLoader.loadLibs();
-        LibLoader.loadLibs();
         launch(args);
     }
 }

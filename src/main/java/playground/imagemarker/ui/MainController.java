@@ -113,8 +113,8 @@ public class MainController implements Initializable {
             scrollPaneContent.setMinHeight(spH - SCROLLBAR_WIDTH);
         });
 
-        selectionRepository = new SelectionRepository(new File("C:\\development\\dataset\\open_images_lp_validation\\exclude"));
-        fileRepository = new FileRepository(new File("C:\\development\\dataset\\open_images_lp_validation\\exclude"));
+        selectionRepository = new SelectionRepository(new File("C:\\development\\images_dataset"));
+        fileRepository = new FileRepository(new File("C:\\development\\images_dataset"));
         if (fileRepository.hasFiles()) {
             imageDisplay.setDisable(false);
             selectFile(fileRepository.nextFile());
@@ -275,14 +275,14 @@ public class MainController implements Initializable {
             case F:
 
 
-                try {
-                    String s = new File("C:\\development\\workspace\\imagemarker\\src\\main\\resources\\Main.css").toURI().toURL().toExternalForm();
-                    root.getStylesheets().clear();
-                    root.getStylesheets().add(s);
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    String s = new File("C:\\development\\workspace\\imagemarker\\src\\main\\resources\\Main.css").toURI().toURL().toExternalForm();
+//                    root.getStylesheets().clear();
+//                    root.getStylesheets().add(s);
+//
+//                } catch (MalformedURLException e) {
+//                    e.printStackTrace();
+//                }
 
             default:
                 break;
@@ -328,13 +328,6 @@ public class MainController implements Initializable {
         }*/
     }
 
-    private void drawSelection(Selection selection) {
-        Rectangle rectangle = selection.getRectangle();
-        GraphicsContext graphicsContext2D = imageDisplay.getGraphicsContext2D();
-        graphicsContext2D.setLineWidth(3);
-        graphicsContext2D.setStroke(Color.RED);
-        graphicsContext2D.strokeRect(rectangle.getX(), rectangle.getY(), rectangle.getWidth(), rectangle.getHeight());
-    }
 }
 
 

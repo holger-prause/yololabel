@@ -6,6 +6,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 import playground.imagemarker.ui.BBox;
 import playground.imagemarker.ui.BBoxManager;
+import playground.imagemarker.ui.PickLabelDialog;
 
 /**
  * Created by holger on 23.03.2019.
@@ -74,6 +75,8 @@ public class DrawLabelStateHandler extends LabelStateHandler {
             if(boundingBox.getW() > 1 && boundingBox.getH() > 1) {
                 success = true;
             }
+            showPickLabelDialog();
+            
             BBoxManager.getInstance().endDrawingBox(success);
             mouseEvent.consume();
             returnState = ActionState.VIEW_LABELS;
@@ -94,4 +97,12 @@ public class DrawLabelStateHandler extends LabelStateHandler {
         originX = 0;
         originY = 0;
     }
+    
+	private void showPickLabelDialog() {
+		PickLabelDialog pickLabelDialog = new PickLabelDialog();
+		pickLabelDialog.show();
+        
+        
+        
+	}
 }

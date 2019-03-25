@@ -12,6 +12,7 @@ import playground.imagemarker.ui.BBox;
 import playground.imagemarker.ui.BBoxManager;
 import playground.imagemarker.ui.StageManager;
 import playground.imagemarker.util.BBoxUtil;
+import playground.imagemarker.util.BBoxUtil.CornerType;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -50,7 +51,7 @@ public class ViewLabelStateHandler extends LabelStateHandler {
             String format = String.format(title, BASE_TITLE, currentImagePath.getFileName().toString(), currentImage.getWidth(), currentImage.getHeight());
             stage.setTitle(format);
         }
-
+        
         manager.repaint();
     }
 
@@ -71,22 +72,28 @@ public class ViewLabelStateHandler extends LabelStateHandler {
     @Override
     public ActionState handleMouseMoved(ImageViewManager manager, MouseEvent mouseEvent) {
         List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentViewBoxes();
-        boolean isResizeHover = false;
+        CornerType resizeCorner = null;
+        Cursor cursor = Cursor.DEFAULT;
         for(BBox bBox: currentViewBoxes) {
-            if (BBoxUtil.getResizeCorner(bBox, mouseEvent) != null) {
-                isResizeHover = true;
+        	resizeCorner = BBoxUtil.getResizeCorner(bBox, mouseEvent);
+            if (resizeCorner != null) {
+            	if(resizeCorner == CornerType.TOP_LEFT || resizeCorner == CornerType.BOTTOM_RIGHT) {
+                	cursor = Cursor.SE_RESIZE;
+                } else {
+                	cursor = Cursor.SW_RESIZE;
+                }
                 break;
             }
+            
+            if(BBoxUtil.isWithinBBox(bBox, mouseEvent)) {
+        		cursor = Cursor.CLOSED_HAND;
+        		break;
+        	}
         }
-
-        if(isResizeHover) {
-            StageManager stageManager = StageManager.getInstance();
-            stageManager.getScene().setCursor(Cursor.SW_RESIZE);
-        } else {
-            StageManager stageManager = StageManager.getInstance();
-            stageManager.getScene().setCursor(Cursor.DEFAULT);
-        }
-
+        
+        
+        StageManager stageManager = StageManager.getInstance();
+        stageManager.getScene().setCursor(cursor);
         return getActionState();
     }
 
@@ -102,6 +109,11 @@ public class ViewLabelStateHandler extends LabelStateHandler {
                 mouseEvent.consume();
                 break;
             }
+            
+            if(BBoxUtil.isWithinBBox(bBox, mouseEvent)) {
+            	BBoxManager.getInstance().startDrawingBox(bBox);
+            	returnActionState = ActionState.DRAG_LABEL;
+        	}
         }
 
         return returnActionState;

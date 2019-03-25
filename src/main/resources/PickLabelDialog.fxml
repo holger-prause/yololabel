@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="playground.imagemarker.ui.PickLabelDialogController"
+            style="-fx-padding: 10px;">
+	<top>
+		<HBox spacing="10">
+			<children>
+				<Button fx:id="saveButton" onAction="#saveClicked" text="Save"/>
+				<Button onAction="#cancelClicked" text="Cancel"/>
+			</children>
+		</HBox>
+	</top>
+	<center>
+		<VBox>
+			<children>
+				<Pane styleClass="spacerVertical"/>
+				<ListView fx:id="labelsView" prefWidth="100" prefHeight="300"/>
+			</children>
+		</VBox>
+	</center>
+	<stylesheets>
+        <URL value="@Main.css" />
+    </stylesheets>
+</BorderPane>

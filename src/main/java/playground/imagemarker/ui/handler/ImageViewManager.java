@@ -34,6 +34,7 @@ public class ImageViewManager {
         actionStates.put(ActionState.VIEW_LABELS, new ViewLabelStateHandler());
         actionStates.put(ActionState.AIM_LABEL, new AimLabelStateHandler());
         actionStates.put(ActionState.DRAW_LABEL, new DrawLabelStateHandler());
+        actionStates.put(ActionState.DRAG_LABEL, new DragLabelStateHandler());
     }
 
     public void handleMouseEvent(MouseEvent mouseEvent) {
