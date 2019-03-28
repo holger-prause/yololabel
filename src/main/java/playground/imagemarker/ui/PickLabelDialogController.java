@@ -1,53 +1,65 @@
 package playground.imagemarker.ui;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 
 public class PickLabelDialogController implements Initializable{
-
-	private List<String> labels = new ArrayList<String>();
-	
 	@FXML 
 	ListView<String> labelsView;
-	
-	
-
-
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		// TODO Auto-generated method stub
-		labels.add("car");
-		labels.add("window");
-		labels.add("dog");
-		labelsView.getItems().addAll(labels);
-		
-		labelsView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+		LabelsManager labelsManager = LabelsManager.getInstance();
+		labelsView.getItems().addAll(labelsManager.getLabels());
+		labelsView.setOnMouseClicked(new EventHandler<MouseEvent>() {
 			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				
-				
+			public void handle(MouseEvent event) {
+				// TODO Auto-generated method stub
+				if(event.getClickCount() == 2) {
+					saveClicked();
+				} 
 			}
 		});
+						
+		String label = labelsManager.getLastSelectedLabel();
+		if(label == null) {
+			label = labelsManager.getLabels().get(0);
+		}
+		
+		labelsView.getSelectionModel().select(label);	
+		Platform.runLater(() -> labelsView.requestFocus());
 	}
 
-	@FXML public void cancelClicked() 
+	@FXML 
+	public void cancelClicked() 
 	{
-		PickLabelDialog.selectedLabel = null;
-		
+		PickLabelDialog.dialogStage.close();
+		PickLabelDialog.success = false;
 	}
 
 	@FXML 
 	public void saveClicked() {
-		PickLabelDialog.selectedLabel = labelsView.getSelectionModel().getSelectedItem();
+		String label = labelsView.getSelectionModel().getSelectedItem();
+		LabelsManager labelsManager = LabelsManager.getInstance();
+		labelsManager.setLastSelectedLabel(label);
+		PickLabelDialog.success = true;
+		PickLabelDialog.dialogStage.close();
+	}
+
+	@FXML 
+	public void onKeyReleased(KeyEvent event) {
+        if (event.getCode() == KeyCode.ENTER) {
+        	event.consume(); 
+        	saveClicked();
+        }
 	}
 }

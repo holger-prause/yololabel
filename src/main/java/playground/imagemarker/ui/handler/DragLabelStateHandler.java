@@ -1,17 +1,13 @@
 package playground.imagemarker.ui.handler;
 
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
-import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import playground.imagemarker.ui.BBox;
 import playground.imagemarker.ui.BBoxManager;
-import playground.imagemarker.ui.PickLabelDialog;
 import playground.imagemarker.ui.StageManager;
+import playground.imagemarker.util.BBoxUtil;
 
 public class DragLabelStateHandler extends LabelStateHandler{
 	private Point2D initialDragPoint;
@@ -28,8 +24,20 @@ public class DragLabelStateHandler extends LabelStateHandler{
 	}
 
 	@Override
-	public ActionState handleMouseMoved(ImageViewManager manager, MouseEvent mouseEvent) {
-		double newX;
+	public ActionState handleMouseMoved(ImageViewManager manager, MouseEvent mouseEvent) {    	
+    	BBox newLocation = calcNewLocation(mouseEvent);
+    	if(BBoxUtil.isWithinImageView(newLocation, manager.getImageDisplay())) {
+    		bBox.setX(newLocation.getX());
+			bBox.setY(newLocation.getY());		
+			manager.repaint();
+    	}
+    
+		return getActionState();
+	}
+	
+	private BBox calcNewLocation(MouseEvent mouseEvent) {
+		BBox newPosition = new BBox("", bBox.getX(), bBox.getY(), bBox.getW(), bBox.getH());
+    	double newX;
 		double newY;
 		double distX = Math.abs(initialDragPoint.getX() - mouseEvent.getX());
 		double distY = Math.abs(initialDragPoint.getY() - mouseEvent.getY());
@@ -46,13 +54,11 @@ public class DragLabelStateHandler extends LabelStateHandler{
 			newY = initialBBoxOrigin.getY() + distY;
 		}
 		
-		bBox.setX(newX);
-		bBox.setY(newY);		
-		manager.repaint();
-		// TODO Auto-generated method stub
-		return getActionState();
+		newPosition.setX(newX);
+		newPosition.setY(newY);
+		return newPosition;
 	}
-
+	
 	@Override
 	public ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent) {
 		ActionState actionState = getActionState();
@@ -80,5 +86,6 @@ public class DragLabelStateHandler extends LabelStateHandler{
 		initialBBoxOrigin = null;
         StageManager stageManager = StageManager.getInstance();
         stageManager.getScene().setCursor(Cursor.DEFAULT);
+        BBoxManager.getInstance().endDrawingBox(false);
 	}
 }

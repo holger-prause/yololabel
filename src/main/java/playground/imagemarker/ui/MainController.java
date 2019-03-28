@@ -3,7 +3,13 @@ package playground.imagemarker.ui;
 
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -14,7 +20,9 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -23,6 +31,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.*;
+import javafx.util.Callback;
 import playground.imagemarker.io.Config;
 import playground.imagemarker.io.FileRepository;
 import playground.imagemarker.io.SelectionRepository;
@@ -35,9 +44,11 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.scene.control.ListView;
 
 /**
  * Created by Holger on 07.04.2018.
@@ -65,6 +76,9 @@ public class MainController implements Initializable {
 
     @FXML
     protected Canvas imageDisplay;
+    
+	@FXML 
+	protected ListView<BBox> bboxListView;
 
     private Image selectedImage;
     private final DirectoryChooser directoryChooser;
@@ -77,6 +91,7 @@ public class MainController implements Initializable {
 
     private Config config;
     private ImageViewManager imageViewManager;
+
 
     //private ClassifierService classifierService;
 
@@ -99,7 +114,7 @@ public class MainController implements Initializable {
     public void adjustUI(WindowEvent event) {
         imageDisplay.getScene().widthProperty().addListener((observable, oldValue, newValue)
                 -> {
-            double spW = calcScrollpaneWidth();
+            double spW = calcScrollpaneWidth() - bboxListView.getWidth();
             scrollPane.setPrefWidth(spW);
             scrollPane.setMaxWidth(spW);
             scrollPaneContent.setMinWidth(spW - SCROLLBAR_HEIGHT);
@@ -112,18 +127,11 @@ public class MainController implements Initializable {
             scrollPane.setMaxHeight(spH);
             scrollPaneContent.setMinHeight(spH - SCROLLBAR_WIDTH);
         });
-
-        selectionRepository = new SelectionRepository(new File("C:\\development\\images_dataset"));
-        fileRepository = new FileRepository(new File("C:\\development\\images_dataset"));
-        if (fileRepository.hasFiles()) {
-            imageDisplay.setDisable(false);
-            selectFile(fileRepository.nextFile());
-        }
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        imageViewManager = new ImageViewManager(imageDisplay);
+        imageViewManager = new ImageViewManager(bboxListView, imageDisplay);
         imageDisplay.scaleXProperty().bind(scale);
         imageDisplay.scaleYProperty().bind(scale);
         scale.setValue(INITIAL_SCALE);
@@ -137,29 +145,17 @@ public class MainController implements Initializable {
             directoryChooser.setInitialDirectory(lastDir.get());
         }
 
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                //Rectangle imViewDims = computeAvailableSpaceForImView();
-                //scrollPane.setPrefWidth(imViewDims.getWidth());
-                //scrollPane.setPrefHeight(imViewDims.getHeight());
-            }
-        });
-    }
-
-    private Rectangle computeAvailableSpaceForImView() {
-        Scene scene = imageDisplay.getScene();
-        double sceneHeight = scene.getHeight();
-
-
-
-        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        return new Rectangle(0, 0, scene.getWidth(),
-                sceneHeight - menuBar.getMinHeight());
-
-/*        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        return new Rectangle(0, 0, screenBounds.getWidth(),
-                screenBounds.getHeight() - menuBar.getHeight());*/
+//        Platform.runLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                //Rectangle imViewDims = computeAvailableSpaceForImView();
+//                //scrollPane.setPrefWidth(imViewDims.getWidth());
+//                //scrollPane.setPrefHeight(imViewDims.getHeight());
+//            }
+//        });
+        
+                
+        
     }
 
     @FXML
@@ -170,11 +166,14 @@ public class MainController implements Initializable {
             config.setLastDir(selectedDirectory);
             directoryChooser.setInitialDirectory(selectedDirectory);
             imageDisplay.setDisable(false);
-            selectionRepository = new SelectionRepository(selectedDirectory);
-            fileRepository = new FileRepository(selectedDirectory);
-            if (fileRepository.hasFiles()) {
-                selectFile(fileRepository.nextFile());
-            }
+            BBoxManager.getInstance()
+            	.imageDirectorySelected(selectedDirectory.toPath());
+            
+//            selectionRepository = new SelectionRepository(selectedDirectory);
+//            fileRepository = new FileRepository(selectedDirectory);
+//            if (fileRepository.hasFiles()) {
+//                selectFile(fileRepository.nextFile());
+//            }
         }
     }
 
@@ -203,8 +202,9 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    protected void onMouseScroll(ScrollEvent scrollEvent) {
-        imageViewManager.handleScrollEvent(scrollEvent);
+    protected void onImageViewScroll(ScrollEvent event) {
+        imageViewManager.handleScrollEvent(event);
+        event.consume();
 /*        boolean zoomIn = scrollEvent.getDeltaY() > 0;
         if (zoomIn) {
             scale.setValue(scale.get() + SCALE_DELTA_FACTOR);
@@ -217,8 +217,11 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    protected void onMouseClicked(final MouseEvent event) {
+    protected void onImageViewClicked(final MouseEvent event) {
+    	System.err.println("on imgview clicked clicked");
+    	
         imageViewManager.handleMouseEvent(event);
+        event.consume();
         /*if (event.getButton() == MouseButton.PRIMARY) {
             selectionActive = !selectionActive;
             if (selectionActive) {
@@ -243,8 +246,9 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    protected void onMouseMoved(MouseEvent event) {
+    protected void onImageViewMoved(MouseEvent event) {
         imageViewManager.handleMouseEvent(event);
+        event.consume();
 /*        if (selectionActive && selectionRepository.hasCurrentSelection()) {
             Selection selection = selectionRepository.getCurrentSelection();
             selection.adjust(event);
@@ -257,21 +261,21 @@ public class MainController implements Initializable {
         imageViewManager.handleKeyEvent(event);
 
         switch (event.getCode()) {
-            case D:
-                selectFile(fileRepository.nextFile());
-                break;
-            case W:
-                if (selectionRepository.removeLastSelection()) {
-                    repaint();
-                }
-                selectionActive = false;
-                break;
-            case A:
-                selectFile(fileRepository.prevFile());
-                break;
-            case S:
-                selectionRepository.save();
-                break;
+//            case D:
+//                selectFile(fileRepository.nextFile());
+//                break;
+//            case W:
+//                if (selectionRepository.removeLastSelection()) {
+//                    repaint();
+//                }
+//                selectionActive = false;
+//                break;
+//            case A:
+//                selectFile(fileRepository.prevFile());
+//                break;
+//            case S:
+//                selectionRepository.save();
+//                break;
             case F:
 
 
@@ -288,27 +292,32 @@ public class MainController implements Initializable {
                 break;
         }
     }
+    
+	@FXML 
+	public void onRootClicked(MouseEvent event) {
+		imageViewManager.handleOutsideClicked();
+	}
 
     private void selectFile(Optional<File> fileOptional) {
-        if (fileOptional.isPresent()) {
-            File selectedFile = fileOptional.get();
-            imageViewManager.imageSelected(selectedFile.toPath().toAbsolutePath());
-
-            selectedImage = new Image(selectedFile.toURI().toString());
-            scale.setValue(INITIAL_SCALE);
-            imageDisplay.setWidth(selectedImage.getWidth());
-            imageDisplay.setHeight(selectedImage.getHeight());
-            selectionRepository.setCurrentSelections(selectedFile.getName());
-
-            Stage stage = (Stage) imageDisplay.getScene().getWindow();
-            String title = "%s      %-35s Resolution %s x %s        File %d of %d";
-            String format = String.format(title, BASE_TITLE, selectedFile.getName(), selectedImage.getWidth(), selectedImage.getHeight(), fileRepository.currentIndex() + 1, fileRepository.size());
-            stage.setTitle(format);
-
-            //classifierService.classify(selectedFile.getAbsolutePath());
-            repaint();
-        }
-        selectionRepository.save();
+//        if (fileOptional.isPresent()) {
+//            File selectedFile = fileOptional.get();
+//            imageViewManager.imageSelected(selectedFile.toPath().toAbsolutePath());
+//
+//            selectedImage = new Image(selectedFile.toURI().toString());
+//            scale.setValue(INITIAL_SCALE);
+//            imageDisplay.setWidth(selectedImage.getWidth());
+//            imageDisplay.setHeight(selectedImage.getHeight());
+//            selectionRepository.setCurrentSelections(selectedFile.getName());
+//
+//            Stage stage = (Stage) imageDisplay.getScene().getWindow();
+//            String title = "%s      %-35s Resolution %s x %s        File %d of %d";
+//            String format = String.format(title, BASE_TITLE, selectedFile.getName(), selectedImage.getWidth(), selectedImage.getHeight(), fileRepository.currentIndex() + 1, fileRepository.size());
+//            stage.setTitle(format);
+//
+//            //classifierService.classify(selectedFile.getAbsolutePath());
+//            repaint();
+//        }
+//        selectionRepository.save();
     }
 
 
@@ -327,7 +336,6 @@ public class MainController implements Initializable {
             graphicsContext2D.strokeRect(rectangle.getX(), rectangle.getY(), rectangle.getWidth(), rectangle.getHeight());
         }*/
     }
-
 }
 
 

@@ -35,7 +35,7 @@ public class ViewLabelStateHandler extends LabelStateHandler {
     public void activate(ImageViewManager manager) {
         Image currentImage = manager.getCurrentImage();
         Canvas imageDisplay = manager.getImageDisplay();
-        Path currentImagePath = BBoxManager.getInstance().getCurrentImagePath();
+        Path currentImagePath = BBoxManager.getInstance().getCurrentEntry().getPath();
         //only do once per image
         if(imPath == null || !imPath.equals(currentImagePath)) {
             imPath = currentImagePath;
@@ -71,7 +71,7 @@ public class ViewLabelStateHandler extends LabelStateHandler {
 
     @Override
     public ActionState handleMouseMoved(ImageViewManager manager, MouseEvent mouseEvent) {
-        List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentViewBoxes();
+        List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentEntry().getbBoxes();
         CornerType resizeCorner = null;
         Cursor cursor = Cursor.DEFAULT;
         for(BBox bBox: currentViewBoxes) {
@@ -100,22 +100,28 @@ public class ViewLabelStateHandler extends LabelStateHandler {
     @Override
     public ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent) {
         ActionState returnActionState = getActionState();
-        List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentViewBoxes();
+        List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentEntry().getbBoxes();
+        
         for(BBox bBox: currentViewBoxes) {
             BBoxUtil.CornerType focusCorner = BBoxUtil.getResizeCorner(bBox, mouseEvent);
             if (focusCorner != null) {
-                BBoxManager.getInstance().startDrawingBox(BBoxUtil.invertOrigin(bBox, focusCorner));
-                returnActionState = ActionState.DRAW_LABEL;
-                mouseEvent.consume();
+                BBoxManager.getInstance().startDrawingBox(bBox);
+                returnActionState = ActionState.RESIZE_LABEL;
                 break;
             }
             
             if(BBoxUtil.isWithinBBox(bBox, mouseEvent)) {
             	BBoxManager.getInstance().startDrawingBox(bBox);
             	returnActionState = ActionState.DRAG_LABEL;
+            	break;
         	}
         }
 
+        //paint selection to give feedback about selected box
+        if(returnActionState == getActionState()) {
+        	BBoxManager.getInstance().endDrawingBox(false);
+        } 
+        manager.repaint();
         return returnActionState;
     }
 

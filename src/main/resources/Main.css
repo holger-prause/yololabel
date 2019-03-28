@@ -25,3 +25,8 @@
 .spacerVertical {
 	-fx-min-height: 10px;
 }
+
+.list-view {
+    -fx-selection-bar:-fx-accent;
+    -fx-selection-bar-non-focused: -fx-accent;
+}

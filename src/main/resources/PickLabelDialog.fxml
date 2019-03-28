@@ -9,11 +9,11 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" 
             fx:controller="playground.imagemarker.ui.PickLabelDialogController"
-            style="-fx-padding: 10px;">
+            style="-fx-padding: 10px;" onKeyReleased="#onKeyReleased">
 	<top>
 		<HBox spacing="10">
 			<children>
-				<Button fx:id="saveButton" onAction="#saveClicked" text="Save"/>
+				<Button fx:id="saveButton" onAction="#saveClicked" text="Save" defaultButton="true"/>
 				<Button onAction="#cancelClicked" text="Cancel"/>
 			</children>
 		</HBox>

@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.Pane?>
 
 <?import java.net.URL?>
-<Pane fx:id="root" onKeyReleased="#onKeyReleased" style="-fx-background-color: green;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="playground.imagemarker.ui.MainController">
+<Pane fx:id="root" onKeyReleased="#onKeyReleased" onMouseClicked="#onRootClicked" style="-fx-background-color: green;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="playground.imagemarker.ui.MainController">
     <children>
         <BorderPane style="-fx-background-color: blue;">
             <top>
@@ -42,7 +42,7 @@
                             <children>
                             	<BorderPane fx:id="scrollPaneContent">
                             		<center>
-                            		    <Canvas fx:id="imageDisplay" onMouseClicked="#onMouseClicked" onMouseMoved="#onMouseMoved" onScroll="#onMouseScroll">
+                            		    <Canvas fx:id="imageDisplay" onMouseClicked="#onImageViewClicked" onMouseMoved="#onImageViewMoved" onScroll="#onImageViewScroll">
                                 		</Canvas>
                             		</center>
                             	</BorderPane>
@@ -51,6 +51,9 @@
                     </content>
                 </ScrollPane>
             </center>
+            <right>
+            	<ListView fx:id="bboxListView" minWidth="200" prefWidth="200" />
+            </right>
         </BorderPane>
     </children>
     <stylesheets>

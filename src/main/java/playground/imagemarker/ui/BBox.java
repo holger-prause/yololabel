@@ -1,8 +1,8 @@
 package playground.imagemarker.ui;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Point2D;
-import javafx.scene.input.MouseEvent;
-import playground.imagemarker.ui.handler.ImageViewManager;
 
 /**
  * Created by holger on 24.03.2019.
@@ -17,6 +17,7 @@ public class BBox {
     private Point2D tr;
     private Point2D br;
     private Point2D bl;
+    private BooleanProperty visibleProperty = new SimpleBooleanProperty(true);
 
     public BBox() {
         updatePoints();
@@ -98,12 +99,14 @@ public class BBox {
         bl = new Point2D(x, y + h);
     }
 
+	@Override
+	public String toString() {
+		return label;
+	}
 
-
-    private boolean isResizeOverlap(Point2D corner, MouseEvent mouseEvent) {
-        int delta = ImageViewManager.BBOX_BORDER_WITH + 2;
-        double distX = Math.abs(mouseEvent.getX() - corner.getX());
-        double distY = Math.abs(mouseEvent.getY() - corner.getY());
-        return distX <= delta || distY <= delta;
-    }
+	public BooleanProperty visibleProperty() {
+		return visibleProperty;
+	}
+	
+	
 }

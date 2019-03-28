@@ -1,6 +1,5 @@
 package playground.imagemarker.ui.handler;
 
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 
