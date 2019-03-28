@@ -36,7 +36,10 @@ public class PickLabelDialogController implements Initializable{
 		}
 		
 		labelsView.getSelectionModel().select(label);	
-		Platform.runLater(() -> labelsView.requestFocus());
+		Platform.runLater(() -> {
+			labelsView.requestFocus();
+			labelsView.scrollTo(labelsView.getSelectionModel().getSelectedIndex());
+		});
 	}
 
 	@FXML 

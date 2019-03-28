@@ -2,7 +2,9 @@ package playground.imagemarker.ui.handler;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -25,14 +27,13 @@ import playground.imagemarker.ui.BBoxManager;
  * Created by holger on 23.03.2019.
  */
 public class ImageViewManager {
-    public static final int BBOX_BORDER_WITH = 1;
-    public static final Color BBOX_BORDER_COLOR = Color.DARKBLUE;
+    public static final int BBOX_BORDER_WITH = 2;
+    public static final Color BBOX_BORDER_COLOR = Color.WHITE;
 
     private ActionState currentActionState = ActionState.VIEW_LABELS;
     private Map<ActionState, LabelStateHandler> actionStates;
     private Canvas imageDisplay;
     private ListView<BBox> bboxListView;
-    private Image currentImage;
 	
     public ImageViewManager(ListView<BBox> bboxListView, Canvas imageDisplay) {
 		this.bboxListView = bboxListView;
@@ -66,50 +67,67 @@ public class ImageViewManager {
     }
 
     public void handleScrollEvent(ScrollEvent scrollEvent) {
-        ActionState newState = currentActionState;
         LabelStateHandler currentStateHandler = actionStates.get(currentActionState);
-        newState = currentStateHandler.handleScrollEvent(this, scrollEvent);
+        ActionState newState = currentStateHandler.handleScrollEvent(this, scrollEvent);
         if(newState != null && newState != currentActionState) {
             setNewActionState(newState);
             handleScrollEvent(scrollEvent);
         }
     }
 
+    public void handleImageDirSelected(Path imgDir) {
+        BBoxManager boxManager = BBoxManager.getInstance();
+        boxManager.imageDirectorySelected(imgDir);
+        if(boxManager.hasEntries()) {
+            nextImage();
+            imageDisplay.setDisable(false);
+        } else {
+            if(!imageDisplay.isDisabled()) {
+                clearImageDisplay();
+                imageDisplay.setDisable(true);
+            }
+        }
+    }
+
 	public void handleKeyEvent(KeyEvent keyEvent) {
+        if (imageDisplay.isDisabled()) {
+            return;
+        }
+
 		EventType<KeyEvent> eventType = keyEvent.getEventType();
-		if (eventType == KeyEvent.KEY_RELEASED) {
+        BBoxManager boxManager = BBoxManager.getInstance();
+
+        if(eventType == KeyEvent.KEY_PRESSED) {
+            switch (keyEvent.getCode()) {
+                case A:
+                    prevImage();
+                    break;
+                case D:
+                    nextImage();
+                    break;
+            }
+        }
+        else if (eventType == KeyEvent.KEY_RELEASED) {
 			if (!imageDisplay.isDisabled()) {
-				switch (keyEvent.getCode()) {
-				case F:
+                switch (keyEvent.getCode()) {
+				case W:
 					setNewActionState(ActionState.AIM_LABEL);
 					break;
 				case ESCAPE:
 					setNewActionState(ActionState.VIEW_LABELS);
 					break;
 				case DELETE:
-					if (BBoxManager.getInstance().getCurrentDrawingBox() != null) {
-						BBoxManager.getInstance().removeCurrentDrawingBox();
+					if (boxManager.getCurrentDrawingBox() != null) {
+						boxManager.removeCurrentDrawingBox();
 						setNewActionState(ActionState.VIEW_LABELS);
 					}
 					break;
-				case A:
-					BBoxManager.getInstance().previousImage();
-					bindToUI();
-
-					Path currentImagePath = BBoxManager.getInstance().getCurrentEntry().getPath();
-					currentImage = new Image(currentImagePath.toUri().toString());
-					setNewActionState(ActionState.VIEW_LABELS);
-					
-					break;
-				case D:
-					// select rnext image and adopt ui
-					BBoxManager.getInstance().nextImage();
-					bindToUI();
-
-					currentImagePath = BBoxManager.getInstance().getCurrentEntry().getPath();
-					currentImage = new Image(currentImagePath.toUri().toString());
-					setNewActionState(ActionState.VIEW_LABELS);
-					break;
+                case S:
+                    if (boxManager.getCurrentDrawingBox() != null) {
+                        boxManager.removeCurrentDrawingBox();
+                        setNewActionState(ActionState.VIEW_LABELS);
+                    }
+                    break;
 				default:
 					break;
 				}
@@ -117,79 +135,32 @@ public class ImageViewManager {
 		}
 	}
 
-    private void bindToUI() {    	
-    	BBoxManager bBoxManager = BBoxManager.getInstance();
-		ObservableList<BBox> currentViewBoxes = bBoxManager.getCurrentEntry().getbBoxes();
-        bboxListView.setItems(currentViewBoxes);  
-        bBoxManager.selectedBBoxProperty().addListener(new ChangeListener<BBox>() {
-			@Override
-			public void changed(ObservableValue<? extends BBox> observable, BBox oldValue, BBox newValue) {
-				if(newValue == null) {
-					bboxListView.getSelectionModel().clearSelection();
-				} else {
-					bboxListView.getSelectionModel().select(newValue);
-				}
-			}
-		});	
-           
-        bboxListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<BBox>() {
-			@Override
-			public void changed(ObservableValue<? extends BBox> observable, BBox oldValue, BBox newValue) {
-				bBoxManager.startDrawingBox(newValue);
-				repaint();
-			}
-		});
-        
-        bboxListView.setCellFactory(CheckBoxListCell.forListView(new Callback<BBox, ObservableValue<Boolean>>() {
-            @Override
-            public ObservableValue<Boolean> call(BBox bBox) {
-            	bBox.visibleProperty().addListener((ChangeListener<Boolean>) 
-            			(observable, oldValue, newValue) -> repaint());
-                return bBox.visibleProperty();
-            }
-        }));
+    public void handleOutsideClicked(MouseEvent event) {
+        if(!imageDisplay.isDisabled()) {
+            BBoxManager.getInstance().endDrawingBox(false);
+            repaint();
+        }
     }
-    
-	public void handleOutsideClicked() {
-		BBoxManager.getInstance().endDrawingBox(false);
-		if(!imageDisplay.isDisabled())
-			repaint();
-	}
-    
+
     public void repaint() {
         GraphicsContext graphicsContext = imageDisplay.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, imageDisplay.getWidth(), imageDisplay.getHeight());
-        graphicsContext.drawImage(currentImage, 0, 0);
+        graphicsContext.drawImage(BBoxManager.getInstance().getCurrentImage(), 0, 0);
 
-        for(BBox bBox: BBoxManager.getInstance().getCurrentEntry().getbBoxes()) {
-        	paint(bBox, false);
+        Set<BBox> drawingBoxes = new HashSet<>();
+        drawingBoxes.addAll(BBoxManager.getInstance().getCurrentEntry().getbBoxes());
+        BBox currentDrawingBox = BBoxManager.getInstance().getCurrentDrawingBox();
+        if(currentDrawingBox != null) {
+            drawingBoxes.add(currentDrawingBox);
         }
 
-        BBox drawingBox = BBoxManager.getInstance().getCurrentDrawingBox();
-        if(drawingBox != null) {
-        	paint(drawingBox, true);
+        for(BBox bBox: drawingBoxes) {
+            boolean selected = bBox == currentDrawingBox;
+            repaint(bBox, selected);
         }
-    }
-    
-    private void paint(BBox bBox, boolean selected) {
-    	GraphicsContext graphicsContext = imageDisplay.getGraphicsContext2D();
-    	if(bBox.visibleProperty().get()) {
-        	if(selected) {
-                Color selectionFillColor = Color.rgb(4, 80, 204, 0.2);
-                graphicsContext.setFill(selectionFillColor);
-                graphicsContext.fillRect(bBox.getX(), bBox.getY(),
-                		bBox.getW(), bBox.getH());
-        	}
-        	
-            graphicsContext.setLineWidth(BBOX_BORDER_WITH);
-            graphicsContext.setStroke(BBOX_BORDER_COLOR);
-            graphicsContext.strokeRect(bBox.getX(), bBox.getY(),
-            		bBox.getW(), bBox.getH());
-    	}
     }
 
     protected void setNewActionState(ActionState newActionState) {
-        System.err.println(String.format("State change from %s to %s", currentActionState, newActionState));
         if(!actionStates.containsKey(newActionState)) {
             throw new RuntimeException(
                     String.format("Invalid state change from %s to %s", currentActionState, newActionState));
@@ -203,15 +174,71 @@ public class ImageViewManager {
         this.currentActionState = newActionState;
     }
 
-    public GraphicsContext getGraphicsContext() {
-        return imageDisplay.getGraphicsContext2D();
+    private void nextImage() {
+        BBoxManager boxManager = BBoxManager.getInstance();
+        boxManager.nextImage();
+        bindToUI();
+        setNewActionState(ActionState.VIEW_LABELS);
+    }
+
+    private void prevImage() {
+        BBoxManager boxManager = BBoxManager.getInstance();
+        boxManager.previousImage();
+        bindToUI();
+        setNewActionState(ActionState.VIEW_LABELS);
+    }
+
+    private void bindToUI() {    	
+    	BBoxManager bBoxManager = BBoxManager.getInstance();
+		ObservableList<BBox> currentViewBoxes = bBoxManager.getCurrentEntry().getbBoxes();
+        bboxListView.setItems(currentViewBoxes);  
+        bBoxManager.selectedBBoxProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue == null) {
+                bboxListView.getSelectionModel().clearSelection();
+            } else {
+                bboxListView.getSelectionModel().select(newValue);
+            }
+        });
+           
+        bboxListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            bBoxManager.startDrawingBox(newValue);
+            repaint();
+        });
+        
+        bboxListView.setCellFactory(CheckBoxListCell.forListView(new Callback<BBox, ObservableValue<Boolean>>() {
+            @Override
+            public ObservableValue<Boolean> call(BBox bBox) {
+            	bBox.visibleProperty().addListener((observable, oldValue, newValue) -> repaint());
+                return bBox.visibleProperty();
+            }
+        }));
+    }
+
+    private void repaint(BBox bBox, boolean selected) {
+        GraphicsContext graphicsContext = imageDisplay.getGraphicsContext2D();
+    	if(bBox.visibleProperty().get()) {
+        	if(selected) {
+                Color selectionFillColor = Color.rgb(4, 80, 204, 0.6);
+                graphicsContext.setFill(selectionFillColor);
+                graphicsContext.fillRect(bBox.getX(), bBox.getY(),
+                		bBox.getW(), bBox.getH());
+                graphicsContext.setStroke(BBOX_BORDER_COLOR);
+        	} else {
+                graphicsContext.setStroke(Color.rgb(178,34,34, 0.7));
+            }
+        	
+            graphicsContext.setLineWidth(BBOX_BORDER_WITH);
+            graphicsContext.strokeRect(bBox.getX(), bBox.getY(),
+            		bBox.getW(), bBox.getH());
+    	}
+    }
+
+    private void clearImageDisplay() {
+        GraphicsContext graphicsContext = imageDisplay.getGraphicsContext2D();
+        graphicsContext.clearRect(0, 0, imageDisplay.getWidth(), imageDisplay.getHeight());
     }
 
     public Canvas getImageDisplay() {
         return imageDisplay;
-    }
-
-    public Image getCurrentImage() {
-        return currentImage;
     }
 }

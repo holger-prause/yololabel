@@ -33,7 +33,7 @@ public class ViewLabelStateHandler extends LabelStateHandler {
 
     @Override
     public void activate(ImageViewManager manager) {
-        Image currentImage = manager.getCurrentImage();
+        Image currentImage = BBoxManager.getInstance().getCurrentImage();
         Canvas imageDisplay = manager.getImageDisplay();
         Path currentImagePath = BBoxManager.getInstance().getCurrentEntry().getPath();
         //only do once per image
@@ -46,9 +46,13 @@ public class ViewLabelStateHandler extends LabelStateHandler {
             imageDisplay.setWidth(currentImage.getWidth());
             imageDisplay.setHeight(currentImage.getHeight());
 
+
+            BBoxManager boxManager = BBoxManager.getInstance();
             Stage stage = (Stage) imageDisplay.getScene().getWindow();
-            String title = "%s      %-35s Resolution %s x %s ";
-            String format = String.format(title, BASE_TITLE, currentImagePath.getFileName().toString(), currentImage.getWidth(), currentImage.getHeight());
+            String title = "%s      %-35s Resolution %s x %s      File %s of %s";
+            String format = String.format(title, BASE_TITLE, currentImagePath.getFileName().toString()
+                    , (int)currentImage.getWidth(), (int)currentImage.getHeight(),
+                    boxManager.getCurrentIndex()+1, boxManager.getRepositorySize());
             stage.setTitle(format);
         }
         

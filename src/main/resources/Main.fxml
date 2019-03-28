@@ -11,17 +11,17 @@
 <?import javafx.scene.layout.Pane?>
 
 <?import java.net.URL?>
-<Pane fx:id="root" onKeyReleased="#onKeyReleased" onMouseClicked="#onRootClicked" style="-fx-background-color: green;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="playground.imagemarker.ui.MainController">
+<Pane fx:id="root" onKeyReleased="#onKeyReleased" onKeyPressed="#onKeyPressed" onMouseClicked="#onRootClicked" style="-fx-background-color: green;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="playground.imagemarker.ui.MainController">
     <children>
         <BorderPane style="-fx-background-color: blue;">
             <top>
                 <MenuBar fx:id="menuBar" minHeight="30.0" style="-fx-background-color: grey;" BorderPane.alignment="CENTER">
                     <menus>
-                  <Menu mnemonicParsing="false" text="Classifier">
-                    <items>
-                      <MenuItem mnemonicParsing="false" onAction="#onClassifierSelected" text="Set Classifier" />
-                    </items>
-                  </Menu>
+                          <!--<Menu mnemonicParsing="false" text="Classifier">
+                            <items>
+                              <MenuItem mnemonicParsing="false" onAction="#onClassifierSelected" text="Set Classifier" />
+                            </items>
+                          </Menu>-->
                         <Menu text="File">
                             <items>
                                 <MenuItem mnemonicParsing="false" onAction="#onDirectorySelected" text="Open Directory" />
@@ -42,7 +42,7 @@
                             <children>
                             	<BorderPane fx:id="scrollPaneContent">
                             		<center>
-                            		    <Canvas fx:id="imageDisplay" onMouseClicked="#onImageViewClicked" onMouseMoved="#onImageViewMoved" onScroll="#onImageViewScroll">
+                            		    <Canvas fx:id="imageDisplay" onMouseClicked="#onImageViewClicked" onMouseMoved="#onImageViewMoved" onScroll="#onImageViewScroll" disable="true">
                                 		</Canvas>
                             		</center>
                             	</BorderPane>

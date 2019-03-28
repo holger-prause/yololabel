@@ -1,21 +1,23 @@
-Image Marker Help
+YoloLabel
 
-A Tool for creating annotation files for open cv.
-Features:
-* Multiple Selections
-* Resizing of Selections
-* Autosave after browsing
-* Restoring selections from annotation file
+Another Labeling tool for creating annotation files for yolo.
+Autosave is turned on.
 
 Usage:
-Select a directory from the dialog
+Select a directory from the dialog "File"
 Start selection with left click and move cursor, another left click ends the selection.
-Resizing is done with left click on the selection.
+Resizing is done with left click on the corner of the bounding box.
 Zooming in and out with mouse wheel
+
+Labels will be picked from yolo config folder "yololabel"
+in the users home directory. I.e C:\Users\holger\yololabel\predefined_labels.txt
+If the image directory contains a file "labels.txt", labels will
+be picked from this file instead.
 
 Keybindings
 A - previous file
 D - next file
-W - delete last selection
-S - force save selections
+W - aim for drawing
+S - delete current selection
+ESCAPE - abort current action
 

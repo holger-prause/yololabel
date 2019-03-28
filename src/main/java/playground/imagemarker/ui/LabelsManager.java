@@ -6,13 +6,17 @@ import java.util.List;
 public class LabelsManager {
 	private static LabelsManager instance;
 	private List<String> labels;
-	private String lastSelectedLabel;
+	private List<String> predefinedLabels;
+    private String lastSelectedLabel;
 	
 	private LabelsManager() {
-		labels = new ArrayList<String>();
-		labels.add("car");
-		labels.add("tree");
-		labels.add("apple");
+        predefinedLabels = new ArrayList<>();
+        predefinedLabels.add("car");
+        predefinedLabels.add("tree");
+        predefinedLabels.add("apple");
+
+        labels = new ArrayList<>();
+        labels.addAll(predefinedLabels);
 	}
 	
 	public static LabelsManager getInstance() {
@@ -38,4 +42,13 @@ public class LabelsManager {
 	public void setLastSelectedLabel(String lastSelectedLabel) {
 		this.lastSelectedLabel = lastSelectedLabel;
 	}
+
+    public void resetToPredefinedLabels() {
+        labels.clear();
+        labels.addAll(predefinedLabels);
+    }
+
+    public void setPredefinedLabels(List<String> predefinedLabels) {
+        this.predefinedLabels = predefinedLabels;
+    }
 }

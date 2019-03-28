@@ -24,12 +24,10 @@ import playground.imagemarker.util.FileUtil;
 public class BBoxManager {
 
     private static BBoxManager instance;
-    private Map<Path, List<BBox>> boxes = new HashMap<>();
-    
     private List<RepositoryEntry> repository = new ArrayList<>();
-    private SimpleObjectProperty<BBox> selectedBBoxProperty = new SimpleObjectProperty<BBox>(null);
+    private SimpleObjectProperty<BBox> selectedBBoxProperty = new SimpleObjectProperty<>(null);
     private RepositoryEntry currentEntry;
-
+    private Image currentImage;
     
     private BBoxManager() {
     }
@@ -44,31 +42,25 @@ public class BBoxManager {
     public void imageDirectorySelected(Path imageDirPath) {
     	try {
     		//read in labels
-    		Path labelsPath = imageDirPath.resolve("classes.txt");
+    		Path labelsPath = imageDirPath.resolve("labels.txt");
     		if(Files.exists(labelsPath)) {
     			List<String> labels = Files.readAllLines(labelsPath);
 				LabelsManager.getInstance().setLabels(labels);
     		} else {
-    			
-    		}
-    		
+                LabelsManager.getInstance().resetToPredefinedLabels();
+            }
+
+            repository.clear();
 			List<Path> dirContent = Files.list(imageDirPath).collect(Collectors.toList());
 			for(Path file: dirContent) {
 				if(FileUtil.isImage(file)) {
-					Image img = new Image(file.toUri().toString());
 					RepositoryEntry repositoryEntry 
-						= new RepositoryEntry(file, new ArrayList<BBox>(), img.getWidth(), img.getHeight());
-					String baseName = FileUtil.parseBaseName(file);
-					String annFileName = baseName + ".txt";
-					Path annFilePath = imageDirPath.toAbsolutePath().resolve(annFileName);
-					if(Files.exists(annFilePath)) {
-						List<BBox> bBoxes = convertFromYolo(annFilePath, img.getWidth(), img.getHeight());
-						repositoryEntry.bBoxes = FXCollections.observableArrayList(bBoxes);
-					}
-					
+						= new RepositoryEntry(file, new ArrayList<>());
 					repository.add(repositoryEntry);
 				}
 			}
+            currentEntry = null;
+            selectedBBoxProperty.set(null);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -78,7 +70,7 @@ public class BBoxManager {
     	if(repository.isEmpty()) {
     		return;
     	}
-    	
+
     	int selectionIdx;
     	if(currentEntry == null) {
     		selectionIdx = 0;
@@ -89,8 +81,9 @@ public class BBoxManager {
     	if(selectionIdx >= repository.size()) {
     		selectionIdx = repository.size() - 1;
     	}
-  
-    	currentEntry = repository.get(selectionIdx);
+
+        currentEntry = repository.get(selectionIdx);
+        initImage();
     }
     
     public void previousImage() {
@@ -110,18 +103,20 @@ public class BBoxManager {
     	}
   
     	currentEntry = repository.get(selectionIdx);
+        initImage();
     }
-    
-    
-//    public void imageSelected(Path imgPath) {
-//        currentImagePath = imgPath;
-//        
-//        
-//        
-//        currentViewBoxes.clear();
-//        boxes.put(imgPath.toAbsolutePath(), currentViewBoxes);
-//        selectedBBoxProperty.set(null);
-//    }
+
+    private void initImage() {
+        String baseName = FileUtil.parseBaseName(currentEntry.path);
+        String annFileName = baseName + ".txt";
+        Path annFilePath = currentEntry.path.toAbsolutePath()
+                .getParent().resolve(annFileName);
+        currentImage = new Image(currentEntry.path.toUri().toString());
+        if(Files.exists(annFilePath)) {
+            List<BBox> bBoxes = convertFromYolo(annFilePath, currentImage.getWidth(), currentImage.getHeight());
+            currentEntry.bBoxes = FXCollections.observableArrayList(bBoxes);
+        }
+    }
 
     public void endDrawingBox(boolean success) {
         if(success) {
@@ -134,6 +129,7 @@ public class BBoxManager {
     public void removeCurrentDrawingBox() {
     	currentEntry.bBoxes.remove(selectedBBoxProperty.get());
     	selectedBBoxProperty.set(null);
+        serialize();
     }
 
     public BBox getCurrentDrawingBox() {
@@ -147,46 +143,27 @@ public class BBoxManager {
 	public SimpleObjectProperty<BBox> selectedBBoxProperty() {
 		return selectedBBoxProperty;
 	}
-	
-	public class RepositoryEntry {
-		private ObservableList<BBox> bBoxes;
-		private Path path;
-		private double imWidth;
-		private double imHeight;
 
-
-		public RepositoryEntry(Path path, List<BBox> bBoxes, double imWidth, double imHeight) {
-			this.path = path;
-			this.bBoxes = FXCollections.observableArrayList(bBoxes);
-			this.imWidth = imWidth;
-			this.imHeight = imHeight;
-		}
-
-
-		public ObservableList<BBox> getbBoxes() {
-			return bBoxes;
-		}
-
-
-		public Path getPath() {
-			return path;
-		}
-	}
-	
 	private void serialize() {
 		if(currentEntry != null) {
 			Image img = new Image(currentEntry.path.toUri().toString());
-			Path annFile = getAnnotationFile(currentEntry.path);
+			Path annFile = getAnnotationFile();
 			
 			try {
-				Files.write(annFile, convertToYolo(currentEntry.bBoxes, img.getWidth(), img.getHeight()));
+                if(currentEntry.bBoxes.isEmpty()) {
+                    if(Files.exists(annFile)) {
+                        Files.delete(annFile);
+                    }
+                } else {
+                    Files.write(annFile, convertToYolo(currentEntry.bBoxes, img.getWidth(), img.getHeight()));
+                }
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}
 	}
 	
-	private Path getAnnotationFile(Path imgPath) {
+	private Path getAnnotationFile() {
 		String baseName = FileUtil.parseBaseName(currentEntry.path);
 		String annFileName = baseName + ".txt";
 		Path annFile = currentEntry.path.toAbsolutePath()
@@ -210,8 +187,18 @@ public class BBoxManager {
 	
 	private BBox convertFromYolo(String line, double imWidth, double imHeight) {
 		String[] values = line.split(" ");
-		List<String> allLabels = LabelsManager.getInstance().getLabels();		
-		String label = allLabels.get(Integer.parseInt(values[0]));
+		List<String> allLabels = LabelsManager.getInstance().getLabels();
+        int lblIndex = Integer.parseInt(values[0]);
+
+
+        if(lblIndex >= allLabels.size()) {
+            int toAdd = lblIndex - allLabels.size() - 1;
+            for(int i=0; i<toAdd; i++) {
+                allLabels.add("out_of_index(undefined)");
+            }
+        }
+
+        String label = allLabels.get(lblIndex);
 		double centerX = Double.parseDouble(values[1]);
 		double centerY = Double.parseDouble(values[2]);
 		
@@ -248,4 +235,42 @@ public class BBoxManager {
 	public RepositoryEntry getCurrentEntry() {
 		return currentEntry;
 	}
+
+	public boolean hasEntries() {
+        return !repository.isEmpty();
+    }
+
+    public int getCurrentIndex() {
+        if(currentEntry != null) {
+            return repository.indexOf(currentEntry);
+        }
+
+        return -1;
+    }
+
+    public int getRepositorySize() {
+        return repository.size();
+    }
+
+    public Image getCurrentImage() {
+        return currentImage;
+    }
+
+    public class RepositoryEntry {
+        private ObservableList<BBox> bBoxes;
+        private Path path;
+
+        public RepositoryEntry(Path path, List<BBox> bBoxes) {
+            this.path = path;
+            this.bBoxes = FXCollections.observableArrayList(bBoxes);
+        }
+
+        public ObservableList<BBox> getbBoxes() {
+            return bBoxes;
+        }
+
+        public Path getPath() {
+            return path;
+        }
+    }
 }
