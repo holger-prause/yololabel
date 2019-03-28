@@ -9,3 +9,4 @@ How to build and run
   or just double click imagemarker-executable.jar
 
 
+TODO: Support for other formats: Pascal, etc
