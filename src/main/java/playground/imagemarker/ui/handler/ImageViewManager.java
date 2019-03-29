@@ -105,6 +105,8 @@ public class ImageViewManager {
                 case D:
                     nextImage();
                     break;
+				default:
+					break;
             }
         }
         else if (eventType == KeyEvent.KEY_RELEASED) {

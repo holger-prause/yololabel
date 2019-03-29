@@ -1,7 +1,20 @@
 package playground.imagemarker.ui;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
@@ -21,16 +34,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import playground.imagemarker.io.Config;
 import playground.imagemarker.ui.handler.ImageViewManager;
-
-import java.io.*;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * Created by Holger on 07.04.2018.
@@ -139,13 +142,13 @@ public class MainController implements Initializable {
 
     @FXML
     protected void onClassifierSelected() {
-        Stage stage = (Stage) imageDisplay.getScene().getWindow();
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setInitialDirectory(Paths.get(".").toFile());
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("XML", "*.xml")
-        );
-        File selectedClassifier = fileChooser.showOpenDialog(stage);
+//        Stage stage = (Stage) imageDisplay.getScene().getWindow();
+//        FileChooser fileChooser = new FileChooser();
+//        fileChooser.setInitialDirectory(Paths.get(".").toFile());
+//        fileChooser.getExtensionFilters().addAll(
+//                new FileChooser.ExtensionFilter("XML", "*.xml")
+//        );
+//        File selectedClassifier = fileChooser.showOpenDialog(stage);
     }
 
     @FXML
@@ -179,8 +182,6 @@ public class MainController implements Initializable {
 	public void onRootClicked(MouseEvent event) {
 		imageViewManager.handleOutsideClicked(event);
 	}
-
-
 }
 
 
