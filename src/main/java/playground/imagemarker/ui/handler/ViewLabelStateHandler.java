@@ -4,6 +4,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -21,7 +22,7 @@ import java.util.List;
  * Created by holger on 23.03.2019.
  */
 public class ViewLabelStateHandler extends LabelStateHandler {
-    private final String BASE_TITLE = "Image Marker";
+    private final String BASE_TITLE = "Yolo Label";
     private final double INITIAL_SCALE = 1.0;
     private final double SCALE_DELTA_FACTOR = 0.3;
     private DoubleProperty scaleProperty = new SimpleDoubleProperty(INITIAL_SCALE);
@@ -61,6 +62,9 @@ public class ViewLabelStateHandler extends LabelStateHandler {
 
     @Override
     public ActionState handleScrollEvent(ImageViewManager manager, ScrollEvent scrollEvent) {
+    	ScrollPane scrollPane = manager.getScrollPane();
+    	Canvas imageDisplay = manager.getImageDisplay();
+    	
         boolean zoomIn = scrollEvent.getDeltaY() > 0;
         if (zoomIn) {
             scaleProperty.setValue(scaleProperty.get() + SCALE_DELTA_FACTOR);
@@ -70,6 +74,19 @@ public class ViewLabelStateHandler extends LabelStateHandler {
                 scaleProperty.setValue(INITIAL_SCALE);
             }
         }
+        
+        double newW = manager.getImageDisplay().getWidth() * scaleProperty.get();        
+        double newH = manager.getImageDisplay().getHeight() * scaleProperty.get();
+        if(newW > scrollPane.getWidth()) {
+        	double hValue = scrollEvent.getX() / imageDisplay.getWidth();
+        	scrollPane.setHvalue(hValue);
+        }
+        
+        if(newH > scrollPane.getHeight()) {
+        	double vValue = scrollEvent.getY() / imageDisplay.getHeight();
+        	scrollPane.setVvalue(vValue);
+        }
+        
         return getActionState();
     }
 

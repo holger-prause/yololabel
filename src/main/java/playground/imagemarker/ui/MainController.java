@@ -100,7 +100,7 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        imageViewManager = new ImageViewManager(bboxListView, imageDisplay);
+        imageViewManager = new ImageViewManager(scrollPane, bboxListView, imageDisplay);
         config = new Config();
         try {
             List<String> labels = Files.readAllLines(config.getLabelFile());
@@ -161,6 +161,8 @@ public class MainController implements Initializable {
     protected void onImageViewClicked(final MouseEvent event) {
         imageViewManager.handleMouseEvent(event);
         event.consume();
+        
+        
     }
 
     @FXML

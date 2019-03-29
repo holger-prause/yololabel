@@ -13,6 +13,7 @@ import javafx.event.EventType;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
@@ -34,8 +35,10 @@ public class ImageViewManager {
     private Map<ActionState, LabelStateHandler> actionStates;
     private Canvas imageDisplay;
     private ListView<BBox> bboxListView;
+	private ScrollPane scrollPane;
 	
-    public ImageViewManager(ListView<BBox> bboxListView, Canvas imageDisplay) {
+    public ImageViewManager(ScrollPane scrollPane, ListView<BBox> bboxListView, Canvas imageDisplay) {
+		this.scrollPane = scrollPane;
 		this.bboxListView = bboxListView;
 		this.imageDisplay = imageDisplay;
         actionStates = new HashMap<>();
@@ -243,4 +246,8 @@ public class ImageViewManager {
     public Canvas getImageDisplay() {
         return imageDisplay;
     }
+
+	public ScrollPane getScrollPane() {
+		return scrollPane;
+	}
 }
