@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="playground.imagemarker.ui.MoveImageDialogController"
+            style="-fx-padding: 10px;" onKeyReleased="#onKeyReleased" prefHeight="120">
+    <top>
+        <HBox spacing="10">
+            <children>
+                <TextField fx:id="pathDisplay" prefWidth="380" focusTraversable="false" disable="true"></TextField>
+                <Button prefWidth="80" text="Browse" onMouseClicked="#browseClicked"></Button>
+            </children>
+        </HBox>
+    </top>
+    <bottom>
+        <HBox spacing="10">
+            <children>
+                <Button fx:id="saveButton" onAction="#saveClicked" text="(M)ove" defaultButton="true" disable="true"/>
+                <Button onAction="#cancelClicked" text="Cancel"/>
+            </children>
+        </HBox>
+    </bottom>
+    <stylesheets>
+        <URL value="@Main.css" />
+    </stylesheets>
+</BorderPane>
