@@ -26,7 +26,7 @@ public class GotoImageDialog {
         dialogStage.initOwner(primaryStage);
         dialogStage.setTitle("Goto Image");
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/PickLabelDialog.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/GotoImageDialog.fxml"));
         try {
             Parent root = loader.load();
             Scene dialogScene = new Scene(root);

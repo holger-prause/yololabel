@@ -88,8 +88,10 @@ public class ViewLabelStateHandler extends UIStateHandler {
             });
 
             bboxListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-                boxManager.startDrawingBox(newValue);
-                manager.repaint();
+                if(newValue != null) {
+                    boxManager.startDrawingBox(newValue);
+                    manager.repaint();
+                }
             });
 
             bboxListView.setCellFactory(CheckBoxListCell.forListView(new Callback<BBox, ObservableValue<Boolean>>() {

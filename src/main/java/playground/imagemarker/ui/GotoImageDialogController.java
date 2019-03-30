@@ -71,7 +71,7 @@ public class GotoImageDialogController implements Initializable {
     @FXML
     public void onKeyReleased(KeyEvent event) {
         if (event.getCode() == KeyCode.ENTER
-                || event.getCode() == KeyCode.M) {
+                || event.getCode() == KeyCode.G) {
             if(!saveButton.isDisabled()) {
                 saveClicked();
             }

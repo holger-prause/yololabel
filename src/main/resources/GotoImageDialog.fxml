@@ -17,7 +17,7 @@
                 <Label fx:id="statusLabel" />
                 <HBox spacing="10">
                     <children>
-                        <TextField fx:id="inputText" text="" prefWidth="30"/>
+                        <TextField fx:id="inputText" text="" prefWidth="40"/>
                     </children>
                 </HBox>
             </children>
@@ -26,7 +26,7 @@
     <bottom>
         <HBox spacing="10">
             <children>
-                <Button fx:id="saveButton" onAction="#saveClicked" text="Save" defaultButton="true" disable="true"/>
+                <Button fx:id="saveButton" onAction="#saveClicked" text="(G)oto" defaultButton="true" disable="true"/>
                 <Button onAction="#cancelClicked" text="Cancel"/>
             </children>
         </HBox>
