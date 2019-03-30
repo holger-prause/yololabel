@@ -20,10 +20,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -44,6 +41,9 @@ public class MainController implements Initializable {
     private final int SCROLLBAR_HEIGHT = 20;
     @FXML
     public BorderPane scrollPaneContent;
+
+    @FXML
+    public TextField imageNameLabel;
 
     @FXML
     private Parent root;
@@ -100,7 +100,7 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        imageViewManager = new ImageViewManager(scrollPane, bboxListView, imageDisplay);
+        imageViewManager = new ImageViewManager(imageNameLabel, scrollPane, bboxListView, imageDisplay);
         config = new Config();
         try {
             List<String> labels = Files.readAllLines(config.getLabelFile());

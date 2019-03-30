@@ -11,8 +11,10 @@ import javafx.collections.ObservableList;
 import javafx.event.EventType;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -35,10 +37,12 @@ public class ImageViewManager {
     private Map<ActionState, UIStateHandler> actionStates;
     private Canvas imageDisplay;
     private ListView<BBox> bboxListView;
-	private ScrollPane scrollPane;
+    private TextField imageNameLabel;
+    private ScrollPane scrollPane;
 
-    public ImageViewManager(ScrollPane scrollPane, ListView<BBox> bboxListView, Canvas imageDisplay) {
-		this.scrollPane = scrollPane;
+    public ImageViewManager(TextField imageNameLabel, ScrollPane scrollPane, ListView<BBox> bboxListView, Canvas imageDisplay) {
+        this.imageNameLabel = imageNameLabel;
+        this.scrollPane = scrollPane;
 		this.bboxListView = bboxListView;
 		this.imageDisplay = imageDisplay;
         actionStates = new HashMap<>();
@@ -86,11 +90,8 @@ public class ImageViewManager {
         if(boxManager.hasEntries()) {
             nextImage();
             imageDisplay.setDisable(false);
-        } else {
-            if(!imageDisplay.isDisabled()) {
-                disableImageDisplay();
-            }
         }
+        setNewActionState(ActionState.VIEW_LABELS);
     }
 
 	public void handleKeyEvent(KeyEvent keyEvent) {
@@ -219,12 +220,6 @@ public class ImageViewManager {
     	}
     }
 
-    public void disableImageDisplay() {
-        GraphicsContext graphicsContext = imageDisplay.getGraphicsContext2D();
-        graphicsContext.clearRect(0, 0, imageDisplay.getWidth(), imageDisplay.getHeight());
-        imageDisplay.setDisable(true);
-    }
-
     public Canvas getImageDisplay() {
         return imageDisplay;
     }
@@ -235,5 +230,9 @@ public class ImageViewManager {
 
     public ListView<BBox> getBboxListView() {
         return bboxListView;
+    }
+
+    public TextField getImageNameLabel() {
+        return imageNameLabel;
     }
 }

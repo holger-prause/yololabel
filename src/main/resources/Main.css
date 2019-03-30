@@ -30,3 +30,8 @@
     -fx-selection-bar:-fx-accent;
     -fx-selection-bar-non-focused: -fx-accent;
 }
+
+.copyable-label, .copyable-label:focused {
+    -fx-background-color: transparent ;
+    -fx-background-insets: 0px ;
+}

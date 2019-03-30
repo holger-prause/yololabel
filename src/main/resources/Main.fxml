@@ -11,9 +11,9 @@
 <?import javafx.scene.layout.Pane?>
 
 <?import java.net.URL?>
-<Pane fx:id="root" onKeyReleased="#onKeyReleased" onKeyPressed="#onKeyPressed" onMouseClicked="#onRootClicked" style="-fx-background-color: green;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="playground.imagemarker.ui.MainController">
+<Pane fx:id="root" onKeyReleased="#onKeyReleased" onKeyPressed="#onKeyPressed" onMouseClicked="#onRootClicked" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="playground.imagemarker.ui.MainController">
     <children>
-        <BorderPane style="-fx-background-color: blue;">
+        <BorderPane>
             <top>
                 <MenuBar fx:id="menuBar" minHeight="30.0" style="-fx-background-color: grey;" BorderPane.alignment="CENTER">
                     <menus>
@@ -52,7 +52,14 @@
                 </ScrollPane>
             </center>
             <right>
-            	<ListView fx:id="bboxListView" minWidth="200" prefWidth="200" />
+                <BorderPane>
+                    <top>
+                        <TextField fx:id="imageNameLabel" editable="false" styleClass="copyable-label"/>
+                    </top>
+                    <center>
+                        <ListView fx:id="bboxListView" maxWidth="200" prefWidth="200"/>
+                    </center>
+                </BorderPane>
             </right>
         </BorderPane>
     </children>

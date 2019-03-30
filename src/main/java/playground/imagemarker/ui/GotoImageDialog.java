@@ -25,16 +25,8 @@ public class GotoImageDialog {
         dialogStage.initStyle(StageStyle.UTILITY);
         dialogStage.initOwner(primaryStage);
         dialogStage.setTitle("Goto Image");
-        Path p = Paths.get("C:\\development\\workspace\\imagemarker\\src\\main\\resources\\GotoImageDialog.fxml");
 
-        /*FXMLLoader loader = new FXMLLoader(getClass().getResource("/GotoImageDialog.fxml"));*/
-        FXMLLoader loader = null;
-        try {
-            loader = new FXMLLoader(p.toUri().toURL());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/PickLabelDialog.fxml"));
         try {
             Parent root = loader.load();
             Scene dialogScene = new Scene(root);

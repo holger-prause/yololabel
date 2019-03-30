@@ -6,6 +6,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.cell.CheckBoxListCell;
@@ -42,9 +43,15 @@ public class ViewLabelStateHandler extends UIStateHandler {
         BBoxManager boxManager = BBoxManager.getInstance();
         int repositorySize = boxManager.getRepositorySize();
         if(repositorySize == 0) {
-            manager.disableImageDisplay();
+            disableImageDisplay(manager.getImageDisplay());
             StageManager stageManager = StageManager.getInstance();
             stageManager.getScene().setCursor(Cursor.DEFAULT);
+
+            manager.getBboxListView().getItems().clear();
+            Stage stage = StageManager.getInstance().getPrimaryStage();
+            stage.setTitle(BASE_TITLE);
+
+            manager.getImageNameLabel().setText("");
             return;
         }
 
@@ -54,6 +61,7 @@ public class ViewLabelStateHandler extends UIStateHandler {
         //only do once per image
         if(imPath == null || !imPath.equals(currentImagePath)) {
             imPath = currentImagePath;
+            manager.getImageNameLabel().setText(imPath.getFileName().toString());
 
             scaleProperty.setValue(INITIAL_SCALE);
             imageDisplay.scaleXProperty().bind(scaleProperty);
@@ -181,6 +189,13 @@ public class ViewLabelStateHandler extends UIStateHandler {
         manager.repaint();
         return returnActionState;
     }
+
+    public void disableImageDisplay(Canvas imageDisplay) {
+        GraphicsContext graphicsContext = imageDisplay.getGraphicsContext2D();
+        graphicsContext.clearRect(0, 0, imageDisplay.getWidth(), imageDisplay.getHeight());
+        imageDisplay.setDisable(true);
+    }
+
 
     @Override
     public void reset() {
