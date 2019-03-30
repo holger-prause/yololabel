@@ -7,7 +7,7 @@ import playground.imagemarker.ui.BBox;
 import playground.imagemarker.ui.BBoxManager;
 import playground.imagemarker.util.BBoxUtil;
 
-public class ResizeLabelStateHandler extends LabelStateHandler {
+public class ResizeLabelStateHandler extends UIStateHandler {
 	private BBox resizeBBox;
 	private Point2D origin;
 	

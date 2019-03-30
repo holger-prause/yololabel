@@ -19,5 +19,7 @@ A - previous file
 D - next file
 W - aim for drawing
 S - delete current selection
+G - goto image
+M - move image
 ESCAPE - abort current action
 

@@ -2,13 +2,18 @@ package playground.imagemarker.ui.handler;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import playground.imagemarker.ui.BBox;
 import playground.imagemarker.ui.BBoxManager;
 import playground.imagemarker.ui.StageManager;
@@ -21,7 +26,7 @@ import java.util.List;
 /**
  * Created by holger on 23.03.2019.
  */
-public class ViewLabelStateHandler extends LabelStateHandler {
+public class ViewLabelStateHandler extends UIStateHandler {
     private final String BASE_TITLE = "Yolo Label";
     private final double INITIAL_SCALE = 1.0;
     private final double SCALE_DELTA_FACTOR = 0.3;
@@ -34,9 +39,18 @@ public class ViewLabelStateHandler extends LabelStateHandler {
 
     @Override
     public void activate(ImageViewManager manager) {
-        Image currentImage = BBoxManager.getInstance().getCurrentImage();
+        BBoxManager boxManager = BBoxManager.getInstance();
+        int repositorySize = boxManager.getRepositorySize();
+        if(repositorySize == 0) {
+            manager.disableImageDisplay();
+            StageManager stageManager = StageManager.getInstance();
+            stageManager.getScene().setCursor(Cursor.DEFAULT);
+            return;
+        }
+
+        Image currentImage = boxManager.getCurrentImage();
         Canvas imageDisplay = manager.getImageDisplay();
-        Path currentImagePath = BBoxManager.getInstance().getCurrentEntry().getPath();
+        Path currentImagePath = boxManager.getCurrentEntry().getPath();
         //only do once per image
         if(imPath == null || !imPath.equals(currentImagePath)) {
             imPath = currentImagePath;
@@ -47,16 +61,38 @@ public class ViewLabelStateHandler extends LabelStateHandler {
             imageDisplay.setWidth(currentImage.getWidth());
             imageDisplay.setHeight(currentImage.getHeight());
 
-
-            BBoxManager boxManager = BBoxManager.getInstance();
             Stage stage = (Stage) imageDisplay.getScene().getWindow();
             String title = "%s      %-35s Resolution %s x %s      File %s of %s";
             String format = String.format(title, BASE_TITLE, currentImagePath.getFileName().toString()
                     , (int)currentImage.getWidth(), (int)currentImage.getHeight(),
                     boxManager.getCurrentIndex()+1, boxManager.getRepositorySize());
             stage.setTitle(format);
+
+            ObservableList<BBox> currentViewBoxes = boxManager.getCurrentEntry().getbBoxes();
+            ListView<BBox> bboxListView = manager.getBboxListView();
+            bboxListView.setItems(currentViewBoxes);
+            boxManager.selectedBBoxProperty().addListener((observable, oldValue, newValue) -> {
+                if(newValue == null) {
+                    bboxListView.getSelectionModel().clearSelection();
+                } else {
+                    bboxListView.getSelectionModel().select(newValue);
+                }
+            });
+
+            bboxListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+                boxManager.startDrawingBox(newValue);
+                manager.repaint();
+            });
+
+            bboxListView.setCellFactory(CheckBoxListCell.forListView(new Callback<BBox, ObservableValue<Boolean>>() {
+                @Override
+                public ObservableValue<Boolean> call(BBox bBox) {
+                    bBox.visibleProperty().addListener((observable, oldValue, newValue) -> manager.repaint());
+                    return bBox.visibleProperty();
+                }
+            }));
         }
-        
+
         manager.repaint();
     }
 

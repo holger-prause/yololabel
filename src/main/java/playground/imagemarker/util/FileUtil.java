@@ -31,4 +31,9 @@ public class FileUtil {
 			return null;
 		}
 	}
+
+	public static Path getAnnotationPath(Path imgPath) {
+        String annName = parseBaseName(imgPath) + ".txt";
+        return imgPath.toAbsolutePath().getParent().resolve(annName);
+    }
 }

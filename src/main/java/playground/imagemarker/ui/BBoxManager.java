@@ -1,8 +1,10 @@
 package playground.imagemarker.ui;
 
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +27,9 @@ public class BBoxManager {
     private SimpleObjectProperty<BBox> selectedBBoxProperty = new SimpleObjectProperty<>(null);
     private RepositoryEntry currentEntry;
     private Image currentImage;
-    
-    private BBoxManager() {
+	private Path imageDirPath;
+
+	private BBoxManager() {
     }
 
     public static BBoxManager getInstance() {
@@ -37,7 +40,8 @@ public class BBoxManager {
     }
 
     public void imageDirectorySelected(Path imageDirPath) {
-    	try {
+		this.imageDirPath = imageDirPath;
+		try {
     		//read in labels
     		Path labelsPath = imageDirPath.resolve("labels.txt");
     		if(Files.exists(labelsPath)) {
@@ -56,13 +60,19 @@ public class BBoxManager {
 					repository.add(repositoryEntry);
 				}
 			}
-            currentEntry = null;
-            selectedBBoxProperty.set(null);
+
+            clearCurrentEntry();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
     }
-    
+
+    public void goToImage(int index) {
+        clearCurrentEntry();
+        currentEntry = repository.get(index);
+        initImage();
+    }
+
     public void nextImage() {
     	if(repository.isEmpty()) {
     		return;
@@ -104,10 +114,7 @@ public class BBoxManager {
     }
 
     private void initImage() {
-        String baseName = FileUtil.parseBaseName(currentEntry.path);
-        String annFileName = baseName + ".txt";
-        Path annFilePath = currentEntry.path.toAbsolutePath()
-                .getParent().resolve(annFileName);
+        Path annFilePath = FileUtil.getAnnotationPath(currentEntry.path);
         currentImage = new Image(currentEntry.path.toUri().toString());
         if(Files.exists(annFilePath)) {
             List<BBox> bBoxes = convertFromYolo(annFilePath, currentImage.getWidth(), currentImage.getHeight());
@@ -144,7 +151,7 @@ public class BBoxManager {
 	private void serialize() {
 		if(currentEntry != null) {
 			Image img = new Image(currentEntry.path.toUri().toString());
-			Path annFile = getAnnotationFile();
+			Path annFile = FileUtil.getAnnotationPath(currentEntry.path);
 			
 			try {
                 if(currentEntry.bBoxes.isEmpty()) {
@@ -159,15 +166,7 @@ public class BBoxManager {
 			}
 		}
 	}
-	
-	private Path getAnnotationFile() {
-		String baseName = FileUtil.parseBaseName(currentEntry.path);
-		String annFileName = baseName + ".txt";
-		Path annFile = currentEntry.path.toAbsolutePath()
-				.getParent().resolve(annFileName);
-		return annFile;
-	}
-	
+
 	private List<String> convertToYolo(List<BBox> boxes, double imWidth, double imHeight) {
 		return boxes.stream().map(e -> convertToYolo(e, imWidth, imHeight))
 			.collect(Collectors.toList());
@@ -251,6 +250,47 @@ public class BBoxManager {
 
     public Image getCurrentImage() {
         return currentImage;
+    }
+
+	public Path getImageDirPath() {
+		return imageDirPath;
+	}
+
+    public void moveCurrentImage(Path moveDir) throws IOException {
+        if(currentEntry == null) {
+            return;
+        }
+
+        Path targetImgPath = moveDir.resolve(currentEntry.path.getFileName());
+        Files.move(currentEntry.path, targetImgPath, StandardCopyOption.REPLACE_EXISTING);
+
+        Path targetAnnFile = null;
+        Path currentAnnFile = FileUtil.getAnnotationPath(currentEntry.path);
+        if(Files.exists(currentAnnFile)) {
+            targetAnnFile = moveDir.resolve(currentAnnFile.getFileName());
+            Files.move(currentAnnFile, targetAnnFile, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        //determine the next entry and select it if possible
+        int selectionIdx = getCurrentIndex();
+        repository.remove(currentEntry);
+        clearCurrentEntry();
+
+        if(!repository.isEmpty()) {
+            int endIdx = repository.size() -1;
+            if(selectionIdx > endIdx) {
+                selectionIdx = endIdx - 1;
+            }
+
+            currentEntry = repository.get(selectionIdx);
+            initImage();
+        }
+    }
+
+    private void clearCurrentEntry() {
+        currentEntry = null;
+        selectedBBoxProperty.set(null);
+        currentImage = null;
     }
 
     public class RepositoryEntry {

@@ -9,7 +9,7 @@ import playground.imagemarker.ui.StageManager;
 /**
  * Created by holger on 23.03.2019.
  */
-public class AimLabelStateHandler extends LabelStateHandler {
+public class AimLabelStateHandler extends UIStateHandler {
 
     public AimLabelStateHandler() {
         super(ActionState.AIM_LABEL);

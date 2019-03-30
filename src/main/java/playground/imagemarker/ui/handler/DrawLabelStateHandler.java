@@ -12,7 +12,7 @@ import playground.imagemarker.util.BBoxUtil;
 /**
  * Created by holger on 23.03.2019.
  */
-public class DrawLabelStateHandler extends LabelStateHandler {
+public class DrawLabelStateHandler extends UIStateHandler {
     private BBox boundingBox;
     private Point2D origin;
 

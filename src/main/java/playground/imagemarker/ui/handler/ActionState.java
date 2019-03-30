@@ -8,5 +8,7 @@ public enum ActionState {
     DRAW_LABEL,
     AIM_LABEL,
     DRAG_LABEL,
-    RESIZE_LABEL
+    RESIZE_LABEL,
+    MOVE_IMAGE,
+    GOTO_IMAGE
 }

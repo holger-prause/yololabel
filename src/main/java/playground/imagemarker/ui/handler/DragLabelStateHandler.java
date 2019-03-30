@@ -9,7 +9,7 @@ import playground.imagemarker.ui.BBoxManager;
 import playground.imagemarker.ui.StageManager;
 import playground.imagemarker.util.BBoxUtil;
 
-public class DragLabelStateHandler extends LabelStateHandler{
+public class DragLabelStateHandler extends UIStateHandler {
 	private Point2D initialDragPoint;
 	private Point2D initialBBoxOrigin;
 	private BBox bBox; 

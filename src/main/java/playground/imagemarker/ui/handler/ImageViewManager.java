@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.EventType;
@@ -15,7 +14,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.cell.CheckBoxListCell;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -24,19 +22,21 @@ import javafx.util.Callback;
 import playground.imagemarker.ui.BBox;
 import playground.imagemarker.ui.BBoxManager;
 
+
 /**
  * Created by holger on 23.03.2019.
  */
 public class ImageViewManager {
+
+
     public static final int BBOX_BORDER_WITH = 2;
     public static final Color BBOX_BORDER_COLOR = Color.WHITE;
-
     private ActionState currentActionState = ActionState.VIEW_LABELS;
-    private Map<ActionState, LabelStateHandler> actionStates;
+    private Map<ActionState, UIStateHandler> actionStates;
     private Canvas imageDisplay;
     private ListView<BBox> bboxListView;
 	private ScrollPane scrollPane;
-	
+
     public ImageViewManager(ScrollPane scrollPane, ListView<BBox> bboxListView, Canvas imageDisplay) {
 		this.scrollPane = scrollPane;
 		this.bboxListView = bboxListView;
@@ -47,11 +47,13 @@ public class ImageViewManager {
         actionStates.put(ActionState.DRAW_LABEL, new DrawLabelStateHandler());
         actionStates.put(ActionState.DRAG_LABEL, new DragLabelStateHandler());
         actionStates.put(ActionState.RESIZE_LABEL, new ResizeLabelStateHandler());
+        actionStates.put(ActionState.MOVE_IMAGE, new MoveImageHandler());
+        actionStates.put(ActionState.GOTO_IMAGE, new GotoImageHandler());
     }
 
     public void handleMouseEvent(MouseEvent mouseEvent) {
         EventType<? extends MouseEvent> eventType = mouseEvent.getEventType();
-        LabelStateHandler currentStateHandler = actionStates.get(currentActionState);
+        UIStateHandler currentStateHandler = actionStates.get(currentActionState);
 
         ActionState newState = currentActionState;
         if(eventType == MouseEvent.MOUSE_CLICKED) {
@@ -70,7 +72,7 @@ public class ImageViewManager {
     }
 
     public void handleScrollEvent(ScrollEvent scrollEvent) {
-        LabelStateHandler currentStateHandler = actionStates.get(currentActionState);
+        UIStateHandler currentStateHandler = actionStates.get(currentActionState);
         ActionState newState = currentStateHandler.handleScrollEvent(this, scrollEvent);
         if(newState != null && newState != currentActionState) {
             setNewActionState(newState);
@@ -86,8 +88,7 @@ public class ImageViewManager {
             imageDisplay.setDisable(false);
         } else {
             if(!imageDisplay.isDisabled()) {
-                clearImageDisplay();
-                imageDisplay.setDisable(true);
+                disableImageDisplay();
             }
         }
     }
@@ -127,6 +128,14 @@ public class ImageViewManager {
 						setNewActionState(ActionState.VIEW_LABELS);
 					}
 					break;
+                case M:
+                    setNewActionState(ActionState.MOVE_IMAGE);
+                    setNewActionState(ActionState.VIEW_LABELS);
+                    break;
+                case G:
+                    setNewActionState(ActionState.GOTO_IMAGE);
+                    setNewActionState(ActionState.VIEW_LABELS);
+                    break;
                 case S:
                     if (boxManager.getCurrentDrawingBox() != null) {
                         boxManager.removeCurrentDrawingBox();
@@ -165,16 +174,16 @@ public class ImageViewManager {
         }
     }
 
-    protected void setNewActionState(ActionState newActionState) {
+    private void setNewActionState(ActionState newActionState) {
         if(!actionStates.containsKey(newActionState)) {
             throw new RuntimeException(
                     String.format("Invalid state change from %s to %s", currentActionState, newActionState));
         }
 
-        LabelStateHandler currentStateHandler = actionStates.get(currentActionState);
+        UIStateHandler currentStateHandler = actionStates.get(currentActionState);
         currentStateHandler.reset();
 
-        LabelStateHandler newActionStateHandler = actionStates.get(newActionState);
+        UIStateHandler newActionStateHandler = actionStates.get(newActionState);
         newActionStateHandler.activate(this);
         this.currentActionState = newActionState;
     }
@@ -182,41 +191,13 @@ public class ImageViewManager {
     private void nextImage() {
         BBoxManager boxManager = BBoxManager.getInstance();
         boxManager.nextImage();
-        bindToUI();
         setNewActionState(ActionState.VIEW_LABELS);
     }
 
     private void prevImage() {
         BBoxManager boxManager = BBoxManager.getInstance();
         boxManager.previousImage();
-        bindToUI();
         setNewActionState(ActionState.VIEW_LABELS);
-    }
-
-    private void bindToUI() {    	
-    	BBoxManager bBoxManager = BBoxManager.getInstance();
-		ObservableList<BBox> currentViewBoxes = bBoxManager.getCurrentEntry().getbBoxes();
-        bboxListView.setItems(currentViewBoxes);  
-        bBoxManager.selectedBBoxProperty().addListener((observable, oldValue, newValue) -> {
-            if(newValue == null) {
-                bboxListView.getSelectionModel().clearSelection();
-            } else {
-                bboxListView.getSelectionModel().select(newValue);
-            }
-        });
-           
-        bboxListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            bBoxManager.startDrawingBox(newValue);
-            repaint();
-        });
-        
-        bboxListView.setCellFactory(CheckBoxListCell.forListView(new Callback<BBox, ObservableValue<Boolean>>() {
-            @Override
-            public ObservableValue<Boolean> call(BBox bBox) {
-            	bBox.visibleProperty().addListener((observable, oldValue, newValue) -> repaint());
-                return bBox.visibleProperty();
-            }
-        }));
     }
 
     private void repaint(BBox bBox, boolean selected) {
@@ -238,9 +219,10 @@ public class ImageViewManager {
     	}
     }
 
-    private void clearImageDisplay() {
+    public void disableImageDisplay() {
         GraphicsContext graphicsContext = imageDisplay.getGraphicsContext2D();
         graphicsContext.clearRect(0, 0, imageDisplay.getWidth(), imageDisplay.getHeight());
+        imageDisplay.setDisable(true);
     }
 
     public Canvas getImageDisplay() {
@@ -250,4 +232,8 @@ public class ImageViewManager {
 	public ScrollPane getScrollPane() {
 		return scrollPane;
 	}
+
+    public ListView<BBox> getBboxListView() {
+        return bboxListView;
+    }
 }
