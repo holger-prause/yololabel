@@ -78,6 +78,10 @@ public class BBoxUtil {
     }
     
     public static boolean isWithinBBox(BBox bBox, MouseEvent mouseEvent) {
+    	if(!bBox.visibleProperty().get()) {
+    		return false;
+    	}
+    	
     	Rectangle2D rectangle = new Rectangle2D(bBox.getX(), bBox.getY(), bBox.getW(), bBox.getH());
     	return rectangle.contains(new Point2D(mouseEvent.getX(), mouseEvent.getY()));
     }
