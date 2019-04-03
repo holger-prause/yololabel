@@ -166,7 +166,13 @@ public class ViewLabelStateHandler extends UIStateHandler {
         ActionState returnActionState = getActionState();
         List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentEntry().getbBoxes();
 
-    	BBox focusBox = BBoxUtil.findFocusBBox(currentViewBoxes, mouseEvent);
+        BBox focusBox = null;
+        if(BBoxManager.getInstance().getCurrentDrawingBox() != null) {
+        	focusBox = BBoxManager.getInstance().getCurrentDrawingBox();
+        } else {
+        	focusBox = BBoxUtil.findFocusBBox(currentViewBoxes, mouseEvent);
+        }
+        
     	if(focusBox != null) {
     		BBoxUtil.CornerType resizeCorner = BBoxUtil.getResizeCorner(focusBox, mouseEvent);
             if (resizeCorner != null) {
