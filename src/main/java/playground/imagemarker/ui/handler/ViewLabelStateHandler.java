@@ -139,26 +139,23 @@ public class ViewLabelStateHandler extends UIStateHandler {
     @Override
     public ActionState handleMouseMoved(ImageViewManager manager, MouseEvent mouseEvent) {
         List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentEntry().getbBoxes();
-        CornerType resizeCorner = null;
         Cursor cursor = Cursor.DEFAULT;
-        for(BBox bBox: currentViewBoxes) {
-        	resizeCorner = BBoxUtil.getResizeCorner(bBox, mouseEvent);
+        
+        
+    	BBox focusBox = BBoxUtil.findFocusBBox(currentViewBoxes, mouseEvent);
+    	if(focusBox != null) {
+    		BBoxUtil.CornerType resizeCorner = BBoxUtil.getResizeCorner(focusBox, mouseEvent);
             if (resizeCorner != null) {
             	if(resizeCorner == CornerType.TOP_LEFT || resizeCorner == CornerType.BOTTOM_RIGHT) {
                 	cursor = Cursor.SE_RESIZE;
                 } else {
                 	cursor = Cursor.SW_RESIZE;
                 }
-                break;
+            } else {
+            	cursor = Cursor.CLOSED_HAND;
             }
-            
-            if(BBoxUtil.isWithinBBox(bBox, mouseEvent)) {
-        		cursor = Cursor.CLOSED_HAND;
-        		break;
-        	}
-        }
-        
-        
+    	}
+  
         StageManager stageManager = StageManager.getInstance();
         stageManager.getScene().setCursor(cursor);
         return getActionState();
@@ -168,21 +165,19 @@ public class ViewLabelStateHandler extends UIStateHandler {
     public ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent) {
         ActionState returnActionState = getActionState();
         List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentEntry().getbBoxes();
-        
-        for(BBox bBox: currentViewBoxes) {
-            BBoxUtil.CornerType focusCorner = BBoxUtil.getResizeCorner(bBox, mouseEvent);
-            if (focusCorner != null) {
-                BBoxManager.getInstance().startDrawingBox(bBox);
+
+    	BBox focusBox = BBoxUtil.findFocusBBox(currentViewBoxes, mouseEvent);
+    	if(focusBox != null) {
+    		BBoxUtil.CornerType resizeCorner = BBoxUtil.getResizeCorner(focusBox, mouseEvent);
+            if (resizeCorner != null) {
+                BBoxManager.getInstance().startDrawingBox(focusBox);
                 returnActionState = ActionState.RESIZE_LABEL;
-                break;
+            } else {
+            	returnActionState = ActionState.DRAG_LABEL;
             }
             
-            if(BBoxUtil.isWithinBBox(bBox, mouseEvent)) {
-            	BBoxManager.getInstance().startDrawingBox(bBox);
-            	returnActionState = ActionState.DRAG_LABEL;
-            	break;
-        	}
-        }
+        	BBoxManager.getInstance().startDrawingBox(focusBox);
+    	}
 
         //paint selection to give feedback about selected box
         if(returnActionState == getActionState()) {

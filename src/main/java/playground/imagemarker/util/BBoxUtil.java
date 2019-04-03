@@ -1,5 +1,9 @@
 package playground.imagemarker.util;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
@@ -84,6 +88,21 @@ public class BBoxUtil {
     	
     	Rectangle2D rectangle = new Rectangle2D(bBox.getX(), bBox.getY(), bBox.getW(), bBox.getH());
     	return rectangle.contains(new Point2D(mouseEvent.getX(), mouseEvent.getY()));
+    }
+    
+    public static BBox findFocusBBox(List<BBox> availableBoxes, MouseEvent mouseEvent) {
+    	BBox returnValue = null;
+    	
+    	//sort ascen
+    	List<BBox> focusBoxes = availableBoxes.stream().filter(e -> isWithinBBox(e, mouseEvent))
+    		.sorted(Comparator.comparing(BBox::getSize))
+    		.collect(Collectors.toList());
+    	
+    	if(!focusBoxes.isEmpty()) {
+    		returnValue = focusBoxes.get(0);
+    	}
+    	
+    	return returnValue;
     }
 
     private static boolean isCornerOverlap(Point2D corner, MouseEvent mouseEvent) {

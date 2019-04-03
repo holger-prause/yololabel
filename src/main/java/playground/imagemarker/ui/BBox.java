@@ -91,6 +91,10 @@ public class BBox {
     public Point2D getBl() {
         return bl;
     }
+    
+    public double getSize() {
+    	return w * h;
+    }
 
     private void updatePoints() {
         tl = new Point2D(x, y);
