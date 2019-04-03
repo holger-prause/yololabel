@@ -11,6 +11,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import playground.imagemarker.ui.MainController;
 import playground.imagemarker.ui.StageManager;
+import playground.imagemarker.ui.handler.ViewLabelStateHandler;
 
 /**
  * Created by Holger on 07.04.2018.
@@ -22,7 +23,7 @@ public class Main extends Application {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Main.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
-            stage.setTitle("Image Marker");
+            stage.setTitle(ViewLabelStateHandler.BASE_TITLE);
             stage.setScene(scene);
             stage.setMaximized(true);
 

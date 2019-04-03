@@ -28,7 +28,7 @@ import java.util.List;
  * Created by holger on 23.03.2019.
  */
 public class ViewLabelStateHandler extends UIStateHandler {
-    private final String BASE_TITLE = "Yolo Label";
+    public static final String BASE_TITLE = "Yolo Label";    
     private final double INITIAL_SCALE = 1.0;
     private final double SCALE_DELTA_FACTOR = 0.3;
     private DoubleProperty scaleProperty = new SimpleDoubleProperty(INITIAL_SCALE);

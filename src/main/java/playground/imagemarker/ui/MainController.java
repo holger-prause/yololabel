@@ -20,17 +20,21 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import playground.imagemarker.io.Config;
 import playground.imagemarker.ui.handler.ImageViewManager;
+import playground.imagemarker.ui.handler.ViewLabelStateHandler;
 
 /**
  * Created by Holger on 07.04.2018.
@@ -134,7 +138,7 @@ public class MainController implements Initializable {
                 .parallel().collect(Collectors.joining("\n"));
 
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Image Marker Help");
+        alert.setTitle(ViewLabelStateHandler.BASE_TITLE+ " Help");
         alert.setHeaderText("");
         alert.setContentText(helpText);
         alert.showAndWait();
