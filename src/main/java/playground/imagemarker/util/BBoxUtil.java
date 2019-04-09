@@ -8,6 +8,7 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.shape.Circle;
 import playground.imagemarker.ui.BBox;
 
 
@@ -29,7 +30,7 @@ public class BBoxUtil {
         Point2D tl = new Point2D(bBox.getX(), bBox.getY());
         Point2D tr = new Point2D(bBox.getX()+ bBox.getW(), bBox.getY());
         Point2D br = new Point2D(tr.getX(), bBox.getY()+ bBox.getH());
-        Point2D bl = new Point2D(bBox.getX(), br.getY());
+        Point2D bl = new Point2D(bBox.getX(), br.getY());        
         if(isCornerOverlap(tl, mouseEvent)) {
             returnType = CornerType.TOP_LEFT;
         }
@@ -92,12 +93,18 @@ public class BBoxUtil {
     
     public static BBox findFocusBBox(List<BBox> availableBoxes, MouseEvent mouseEvent) {
     	BBox returnValue = null;
-    	
-    	//sort ascen
-    	List<BBox> focusBoxes = availableBoxes.stream().filter(e -> isWithinBBox(e, mouseEvent))
-    		.sorted(Comparator.comparing(BBox::getSize))
-    		.collect(Collectors.toList());
-    	
+    	//first check for resize focus
+    	List<BBox> focusBoxes = availableBoxes.stream()
+        		.filter(e -> getResizeCorner(e, mouseEvent) != null)
+        		.sorted(Comparator.comparing(BBox::getSize))
+        		.collect(Collectors.toList());   
+    	//check for within boxes
+    	if(focusBoxes.isEmpty()) {
+    		focusBoxes = availableBoxes.stream()
+            		.filter(e -> isWithinBBox(e, mouseEvent))
+            		.sorted(Comparator.comparing(BBox::getSize))
+            		.collect(Collectors.toList());
+    	} 
     	if(!focusBoxes.isEmpty()) {
     		returnValue = focusBoxes.get(0);
     	}
@@ -106,10 +113,8 @@ public class BBoxUtil {
     }
 
     private static boolean isCornerOverlap(Point2D corner, MouseEvent mouseEvent) {
-        int delta = 6;
-        double distX = Math.abs(mouseEvent.getX() - corner.getX());
-        double distY = Math.abs(mouseEvent.getY() - corner.getY());
-        return distX <= delta && distY <= delta;
+    	Circle cornerTargetArea = new Circle(corner.getX(), corner.getY(), 5);
+    	return cornerTargetArea.contains(mouseEvent.getX(), mouseEvent.getY());
     }
     
     public static Point2D getOppositeCorner(CornerType corner, BBox bBox) {

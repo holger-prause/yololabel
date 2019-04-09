@@ -140,8 +140,6 @@ public class ViewLabelStateHandler extends UIStateHandler {
     public ActionState handleMouseMoved(ImageViewManager manager, MouseEvent mouseEvent) {
         List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentEntry().getbBoxes();
         Cursor cursor = Cursor.DEFAULT;
-        
-        
     	BBox focusBox = BBoxUtil.findFocusBBox(currentViewBoxes, mouseEvent);
     	if(focusBox != null) {
     		BBoxUtil.CornerType resizeCorner = BBoxUtil.getResizeCorner(focusBox, mouseEvent);
@@ -165,7 +163,6 @@ public class ViewLabelStateHandler extends UIStateHandler {
     public ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent) {
         ActionState returnActionState = getActionState();
         List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentEntry().getbBoxes();
-
         BBox focusBox = null;
         if(BBoxManager.getInstance().getCurrentDrawingBox() != null) {
         	focusBox = BBoxManager.getInstance().getCurrentDrawingBox();

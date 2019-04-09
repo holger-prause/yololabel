@@ -17,7 +17,7 @@
                 <Label fx:id="statusLabel" />
                 <HBox spacing="10">
                     <children>
-                        <TextField fx:id="inputText" text="" prefWidth="40"/>
+                        <TextField fx:id="inputText" text="" prefWidth="50"/>
                     </children>
                 </HBox>
             </children>
