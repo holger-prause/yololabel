@@ -88,6 +88,7 @@ public class BBoxManager {
     		selectionIdx = repository.size() - 1;
     	}
 
+        clearCurrentEntry();
         currentEntry = repository.get(selectionIdx);
         initImage();
     }
@@ -107,7 +108,8 @@ public class BBoxManager {
     	if(selectionIdx <= 0) {
     		selectionIdx = 0;
     	}
-  
+
+        clearCurrentEntry();
     	currentEntry = repository.get(selectionIdx);
         initImage();
     }
