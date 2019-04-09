@@ -195,10 +195,7 @@ public class ViewLabelStateHandler extends UIStateHandler {
         imageDisplay.setDisable(true);
     }
 
-
     @Override
     public void reset() {
-
     }
-    
 }
