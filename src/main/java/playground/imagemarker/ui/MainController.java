@@ -14,17 +14,14 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -124,7 +121,7 @@ public class MainController implements Initializable {
     protected void onDirectorySelected(ActionEvent event) {
         Stage stage = (Stage) imageDisplay.getScene().getWindow();
         File selectedDirectory = directoryChooser.showDialog(stage);
-        if (selectedDirectory != null) {
+        if (selectedDirectory != null && Files.exists(selectedDirectory.toPath())) {
             config.setLastDir(selectedDirectory);
             directoryChooser.setInitialDirectory(selectedDirectory);
             imageViewManager.handleImageDirSelected(selectedDirectory.toPath());
@@ -188,6 +185,19 @@ public class MainController implements Initializable {
 	public void onRootClicked(MouseEvent event) {
 		imageViewManager.handleOutsideClicked(event);
 	}
+
+/*    public SimpleBooleanProperty scanImageDirProperty() {
+        return scanImageDirProperty;
+    }*/
+
+    @FXML
+    public void scanImageDirClicked(ActionEvent actionEvent) {
+        CheckMenuItem menuItem = (CheckMenuItem) actionEvent.getSource();
+        boolean selected = menuItem.isSelected();
+
+        BBoxManager bBoxManager = BBoxManager.getInstance();
+        bBoxManager.setScanImageDir(selected);
+    }
 }
 
 

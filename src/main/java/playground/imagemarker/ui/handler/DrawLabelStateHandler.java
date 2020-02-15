@@ -1,6 +1,7 @@
 package playground.imagemarker.ui.handler;
 
 import javafx.geometry.Point2D;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import playground.imagemarker.ui.BBox;
@@ -21,17 +22,21 @@ public class DrawLabelStateHandler extends UIStateHandler {
     }
 
     @Override
-    public void activate(ImageViewManager manager) {
+    public void activate(ImageViewManager manager, InputEvent inputEvent) {
+        MouseEvent mouseEvent = (MouseEvent)inputEvent;
         BBox bBox = BBoxManager.getInstance().getCurrentDrawingBox();
         if(bBox != null) {
             boundingBox = bBox;
             origin = boundingBox.getTl();
+        } else {
+            origin = new Point2D(mouseEvent.getX(), mouseEvent.getY());
+            boundingBox = new BBox("", mouseEvent.getX(), mouseEvent.getY(), 0, 0);
+            BBoxManager.getInstance().startDrawingBox(boundingBox);
         }
     }
 
     @Override
     public ActionState handleMouseMoved(ImageViewManager manager, MouseEvent mouseEvent) {
-    	
     	boolean withinBorder 
     		= manager.getImageDisplay().contains(mouseEvent.getX(), mouseEvent.getY());
         if(boundingBox != null && withinBorder) {
@@ -43,25 +48,15 @@ public class DrawLabelStateHandler extends UIStateHandler {
 
     @Override
     public ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent) {
-        ActionState returnState = getActionState();
-        if(boundingBox == null) {
-            origin = new Point2D(mouseEvent.getX(), mouseEvent.getY());
-            boundingBox = new BBox("", mouseEvent.getX(), mouseEvent.getY(), 0, 0);
-            BBoxManager.getInstance().startDrawingBox(boundingBox);
-        } else {
-            boolean success = false;
-            if(boundingBox.getW() > 1 && boundingBox.getH() > 1) {
-            	PickLabelDialog pickLabelDialog = new PickLabelDialog();
-            	success = pickLabelDialog.show();
-            	boundingBox.setLabel(LabelsManager.getInstance().getLastSelectedLabel());
-            }
-            
-            BBoxManager.getInstance().endDrawingBox(success);
-            mouseEvent.consume();
-            returnState = ActionState.VIEW_LABELS;
+        boolean success = false;
+        if(boundingBox.getW() > 1 && boundingBox.getH() > 1) {
+            PickLabelDialog pickLabelDialog = new PickLabelDialog();
+            success = pickLabelDialog.show(PickLabelDialog.DialogType.SELECT);
+            boundingBox.setLabel(LabelsManager.getInstance().getLastSelectedLabel());
         }
 
-        return returnState;
+        BBoxManager.getInstance().endDrawingBox(success);
+        return ActionState.VIEW_LABELS;
     }
 
     @Override

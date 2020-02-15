@@ -1,5 +1,6 @@
 package playground.imagemarker.ui.handler;
 
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import playground.imagemarker.ui.BBoxManager;
@@ -15,7 +16,7 @@ public class GotoImageHandler extends UIStateHandler {
     }
 
     @Override
-    public void activate(ImageViewManager manager) {
+    public void activate(ImageViewManager manager, InputEvent inputEvent) {
         GotoImageDialog gotoImageDialog = new GotoImageDialog();
         Integer imgNr = gotoImageDialog.show();
         if(imgNr != null) {

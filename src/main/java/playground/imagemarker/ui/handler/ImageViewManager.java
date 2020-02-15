@@ -6,24 +6,29 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javafx.application.Platform;
 import javafx.event.EventType;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
+import playground.imagemarker.io.IFileWatchNotifieable;
 import playground.imagemarker.ui.BBox;
 import playground.imagemarker.ui.BBoxManager;
+import playground.imagemarker.ui.LabelsManager;
+import playground.imagemarker.ui.PickLabelDialog;
 
 
 /**
  * Created by holger on 23.03.2019.
  */
-public class ImageViewManager {
+public class ImageViewManager implements IFileWatchNotifieable {
 
 
     public static final int BBOX_BORDER_WITH = 2;
@@ -63,10 +68,7 @@ public class ImageViewManager {
             newState = currentStateHandler.handleMouseMoved(this, mouseEvent);
         }
         if(newState != null && newState != currentActionState) {
-            setNewActionState(newState);
-            if(!mouseEvent.isConsumed()) {
-                handleMouseEvent(mouseEvent);
-            }
+            setNewActionState(newState, mouseEvent);
         }
     }
 
@@ -74,22 +76,31 @@ public class ImageViewManager {
         UIStateHandler currentStateHandler = actionStates.get(currentActionState);
         ActionState newState = currentStateHandler.handleScrollEvent(this, scrollEvent);
         if(newState != null && newState != currentActionState) {
-            setNewActionState(newState);
+            setNewActionState(newState, scrollEvent);
             handleScrollEvent(scrollEvent);
         }
     }
 
     public void handleImageDirSelected(Path imgDir) {
         BBoxManager boxManager = BBoxManager.getInstance();
-        boxManager.imageDirectorySelected(imgDir);
+        boxManager.imageDirectorySelected(imgDir, this);
         if(boxManager.hasEntries()) {
             nextImage();
             imageDisplay.setDisable(false);
         }
-        setNewActionState(ActionState.VIEW_LABELS);
+        setNewActionState(ActionState.VIEW_LABELS, null);
     }
 
-	public void handleKeyEvent(KeyEvent keyEvent) {
+    @Override
+    public void fileCreated(Path file) {
+        //from file watch thread
+        Platform.runLater(() -> {
+            imageDisplay.setDisable(false);
+            setNewActionState(ActionState.VIEW_LABELS, null);
+        });
+    }
+
+    public void handleKeyEvent(KeyEvent keyEvent) {
         if (imageDisplay.isDisabled()) {
             return;
         }
@@ -105,37 +116,66 @@ public class ImageViewManager {
                 case D:
                     nextImage();
                     break;
+                case H:
+                    BBoxManager.getInstance().listToIndex();
+                    break;
 				default:
 					break;
             }
         }
         else if (eventType == KeyEvent.KEY_RELEASED) {
 			if (!imageDisplay.isDisabled()) {
+                BBox currentDrawingBox = boxManager.getCurrentDrawingBox();
                 switch (keyEvent.getCode()) {
 				case W:
-					setNewActionState(ActionState.AIM_LABEL);
+					setNewActionState(ActionState.AIM_LABEL, keyEvent);
 					break;
 				case ESCAPE:
-					setNewActionState(ActionState.VIEW_LABELS);
+					setNewActionState(ActionState.VIEW_LABELS, keyEvent);
 					break;
 				case DELETE:
-					if (boxManager.getCurrentDrawingBox() != null) {
+					if (currentDrawingBox != null) {
 						boxManager.removeCurrentDrawingBox();
-						setNewActionState(ActionState.VIEW_LABELS);
+						setNewActionState(ActionState.VIEW_LABELS, keyEvent);
 					}
 					break;
                 case M:
-                    setNewActionState(ActionState.MOVE_IMAGE);
-                    setNewActionState(ActionState.VIEW_LABELS);
+                    setNewActionState(ActionState.MOVE_IMAGE, keyEvent);
+                    setNewActionState(ActionState.VIEW_LABELS, keyEvent);
                     break;
                 case G:
-                    setNewActionState(ActionState.GOTO_IMAGE);
-                    setNewActionState(ActionState.VIEW_LABELS);
+                    setNewActionState(ActionState.GOTO_IMAGE, keyEvent);
+                    setNewActionState(ActionState.VIEW_LABELS, keyEvent);
                     break;
+                case C:
+                    if (currentDrawingBox != null) {
+                        PickLabelDialog pickLabelDialog = new PickLabelDialog();
+                        boolean success = pickLabelDialog.show(PickLabelDialog.DialogType.COPY);
+                        if(success) {
+                            BBox copy = new BBox(currentDrawingBox);
+                            copy.setLabel(LabelsManager.getInstance().getLastSelectedLabel());
+                            boxManager.addBBox(copy);
+                        }
+                        BBoxManager.getInstance().endDrawingBox(false);
+                        setNewActionState(ActionState.VIEW_LABELS, keyEvent);
+                    }
+                    break;
+                case R:
+                    if (currentDrawingBox != null) {
+                        PickLabelDialog pickLabelDialog = new PickLabelDialog();
+                        boolean success = pickLabelDialog.show(PickLabelDialog.DialogType.RENAME);
+                        if(success) {
+                            currentDrawingBox.setLabel(LabelsManager.getInstance().getLastSelectedLabel());
+                        }
+                        BBoxManager.getInstance().endDrawingBox(success);
+                        setNewActionState(ActionState.VIEW_LABELS, keyEvent);
+                    }
+                    break;
+
                 case S:
-                    if (boxManager.getCurrentDrawingBox() != null) {
+                    if (currentDrawingBox != null) {
                         boxManager.removeCurrentDrawingBox();
-                        setNewActionState(ActionState.VIEW_LABELS);
+                        setNewActionState(ActionState.VIEW_LABELS, keyEvent);
                     }
                     break;
 				default:
@@ -170,30 +210,31 @@ public class ImageViewManager {
         }
     }
 
-    private void setNewActionState(ActionState newActionState) {
+    private void setNewActionState(ActionState newActionState, InputEvent inputEvent) {
         if(!actionStates.containsKey(newActionState)) {
             throw new RuntimeException(
                     String.format("Invalid state change from %s to %s", currentActionState, newActionState));
         }
+        //System.err.println("switching from " + currentActionState.name() + "to: "+newActionState.name());
 
         UIStateHandler currentStateHandler = actionStates.get(currentActionState);
         currentStateHandler.reset();
 
         UIStateHandler newActionStateHandler = actionStates.get(newActionState);
-        newActionStateHandler.activate(this);
+        newActionStateHandler.activate(this, inputEvent);
         this.currentActionState = newActionState;
     }
 
     private void nextImage() {
         BBoxManager boxManager = BBoxManager.getInstance();
         boxManager.nextImage();
-        setNewActionState(ActionState.VIEW_LABELS);
+        setNewActionState(ActionState.VIEW_LABELS, null);
     }
 
     private void prevImage() {
         BBoxManager boxManager = BBoxManager.getInstance();
         boxManager.previousImage();
-        setNewActionState(ActionState.VIEW_LABELS);
+        setNewActionState(ActionState.VIEW_LABELS, null);
     }
 
     private void repaint(BBox bBox, boolean selected) {

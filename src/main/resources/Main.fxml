@@ -32,6 +32,11 @@
                                 <MenuItem mnemonicParsing="false" onAction="#onHelpClicked" text="Info" />
                             </items>
                         </Menu>
+                        <Menu mnemonicParsing="false" text="Options">
+                            <items>
+                                <CheckMenuItem mnemonicParsing="false" text="Scan Image Directory" onAction="#scanImageDirClicked"/>
+                            </items>
+                        </Menu>
                     </menus>
                 </MenuBar>
             </top>

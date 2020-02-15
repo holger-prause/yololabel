@@ -2,6 +2,7 @@ package playground.imagemarker.ui;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Point2D;
 
 /**
@@ -10,7 +11,7 @@ import javafx.geometry.Point2D;
 public class BBox {
     private double w;
     private double h;
-    private String label;
+    private SimpleStringProperty labelProperty;
     private double x;
     private double y;
     private Point2D tl;
@@ -24,12 +25,17 @@ public class BBox {
     }
 
     public BBox(String label, double x, double y, double w, double h) {
-        this.label = label;
+        this.labelProperty = new SimpleStringProperty(label);
         this.x = x;
         this.y = y;
         this.w = w;
         this.h = h;
         updatePoints();
+    }
+
+    public BBox(BBox b) {
+        this(b.getLabel(), b.getX(), b.getY(), b.getW(), b.getH());
+        this.visibleProperty.set(b.visibleProperty.get());
     }
 
     public double getW() {
@@ -69,11 +75,11 @@ public class BBox {
     }
 
     public String getLabel() {
-        return label;
+        return labelProperty.get();
     }
 
     public void setLabel(String label) {
-        this.label = label;
+        this.labelProperty.set(label);
     }
 
     public Point2D getTl() {
@@ -96,6 +102,10 @@ public class BBox {
     	return w * h;
     }
 
+    public SimpleStringProperty getLabelProperty() {
+        return labelProperty;
+    }
+
     private void updatePoints() {
         tl = new Point2D(x, y);
         tr = new Point2D(x + w, y);
@@ -105,7 +115,7 @@ public class BBox {
 
 	@Override
 	public String toString() {
-		return label;
+		return getLabel();
 	}
 
 	public BooleanProperty visibleProperty() {

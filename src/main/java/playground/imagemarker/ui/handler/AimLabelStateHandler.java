@@ -1,6 +1,7 @@
 package playground.imagemarker.ui.handler;
 
 import javafx.scene.Cursor;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import playground.imagemarker.ui.BBoxManager;
@@ -16,7 +17,7 @@ public class AimLabelStateHandler extends UIStateHandler {
     }
 
     @Override
-    public void activate(ImageViewManager manager) {  
+    public void activate(ImageViewManager manager, InputEvent inputEvent) {
     	//clear any previous selection
     	BBoxManager.getInstance().endDrawingBox(false);
     	

@@ -2,11 +2,10 @@ package playground.imagemarker.ui.handler;
 
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import playground.imagemarker.ui.BBox;
-import playground.imagemarker.ui.BBoxManager;
-import playground.imagemarker.ui.StageManager;
+import playground.imagemarker.ui.*;
 import playground.imagemarker.util.BBoxUtil;
 
 public class DragLabelStateHandler extends UIStateHandler {
@@ -19,8 +18,11 @@ public class DragLabelStateHandler extends UIStateHandler {
 	}
 
 	@Override
-	public void activate(ImageViewManager manager) {
-		
+	public void activate(ImageViewManager manager, InputEvent inputEvent) {
+        MouseEvent mouseEvent = (MouseEvent)inputEvent;
+        bBox = BBoxManager.getInstance().getCurrentDrawingBox();
+        initialDragPoint = new Point2D(mouseEvent.getX(), mouseEvent.getY());
+        initialBBoxOrigin = new Point2D(bBox.getX(), bBox.getY());
 	}
 
 	@Override
@@ -61,17 +63,16 @@ public class DragLabelStateHandler extends UIStateHandler {
 	
 	@Override
 	public ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent) {
-		ActionState actionState = getActionState();
-		if(bBox == null) {
-			bBox = BBoxManager.getInstance().getCurrentDrawingBox();
-			initialDragPoint = new Point2D(mouseEvent.getX(), mouseEvent.getY());
-			initialBBoxOrigin = new Point2D(bBox.getX(), bBox.getY());
-		} else {
-			actionState = ActionState.VIEW_LABELS;
-			mouseEvent.consume();
-		}
-		
-		return actionState;
+        //rework whole stuff wtih normal mouse down and so on
+        if(mouseEvent.getClickCount() == 2) {
+            PickLabelDialog pickLabelDialog = new PickLabelDialog();
+            boolean success = pickLabelDialog.show(PickLabelDialog.DialogType.RENAME);
+            if(success) {
+                bBox.setLabel(LabelsManager.getInstance().getLastSelectedLabel());
+                BBoxManager.getInstance().endDrawingBox(success);
+            }
+        }
+		return ActionState.VIEW_LABELS;
 	}
 
 	@Override

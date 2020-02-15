@@ -1,5 +1,6 @@
 package playground.imagemarker.ui.handler;
 
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import playground.imagemarker.ui.BBoxManager;
@@ -17,7 +18,7 @@ public class MoveImageHandler extends UIStateHandler {
     }
 
     @Override
-    public void activate(ImageViewManager manager) {
+    public void activate(ImageViewManager manager, InputEvent inputEvent) {
         MoveImageDialog moveImageDialog = new MoveImageDialog();
         Path moveDir = moveImageDialog.show();
         if(moveDir != null) {

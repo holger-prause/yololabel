@@ -1,25 +1,27 @@
 package playground.imagemarker.ui;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
+import playground.imagemarker.io.FileWatcher;
+import playground.imagemarker.io.IFileWatchNotifieable;
+import playground.imagemarker.ui.handler.ImageViewManager;
 import playground.imagemarker.util.FileUtil;
 
 /**
  * Created by holger on 24.03.2019.
  */
-public class BBoxManager {
+public class BBoxManager implements IFileWatchNotifieable{
 
     private static BBoxManager instance;
     private List<RepositoryEntry> repository = new ArrayList<>();
@@ -27,6 +29,8 @@ public class BBoxManager {
     private RepositoryEntry currentEntry;
     private Image currentImage;
 	private Path imageDirPath;
+    private boolean scanImageDir;
+    private FileWatcher fileWatcher;
 
 	private BBoxManager() {
     }
@@ -38,7 +42,18 @@ public class BBoxManager {
         return instance;
     }
 
-    public void imageDirectorySelected(Path imageDirPath) {
+    public void listToIndex() {
+        int index = repository.indexOf(currentEntry);
+        for(int i = 0; i<= index; i++) {
+            if(i < 0 || i >= repository.size()) {
+                return;
+            }
+            RepositoryEntry entry = repository.get(i);
+            System.err.println(entry.getPath().toAbsolutePath().toString());
+        }
+    }
+
+    public void imageDirectorySelected(Path imageDirPath, ImageViewManager viewManager) {
 		this.imageDirPath = imageDirPath;
 		try {
     		//read in labels
@@ -51,16 +66,25 @@ public class BBoxManager {
             }
 
             repository.clear();
+            long start = System.currentTimeMillis();
+
 			List<Path> dirContent = Files.list(imageDirPath).collect(Collectors.toList());
 			for(Path file: dirContent) {
 				if(FileUtil.isImage(file)) {
 					RepositoryEntry repositoryEntry 
-						= new RepositoryEntry(file, new ArrayList<>());
+						= new RepositoryEntry(file);
 					repository.add(repositoryEntry);
 				}
 			}
-
+            System.err.println("read in in " + (System.currentTimeMillis() - start) + " ms");
             clearCurrentEntry();
+
+            if(fileWatcher == null) {
+                fileWatcher = new FileWatcher(imageDirPath, true, this, viewManager);
+                fileWatcher.setNotify(scanImageDir);
+                fileWatcher.start();
+            }
+            fileWatcher.changeDir(imageDirPath);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -70,6 +94,22 @@ public class BBoxManager {
         clearCurrentEntry();
         currentEntry = repository.get(index);
         initImage();
+    }
+
+    @Override
+    public void fileCreated(Path file) {
+        Platform.runLater(() -> {
+            //replace current element and switch to it
+            int currIdx = repository.indexOf(currentEntry);
+            RepositoryEntry repositoryEntry = new RepositoryEntry(file);
+            if(currIdx == -1) {
+                repository.add(repositoryEntry);
+                goToImage(0);
+            } else {
+                repository.add(currIdx, repositoryEntry);
+                goToImage(currIdx);
+            }
+        });
     }
 
     public void nextImage() {
@@ -119,13 +159,53 @@ public class BBoxManager {
         currentImage = new Image(currentEntry.path.toUri().toString());
         if(Files.exists(annFilePath)) {
             List<BBox> bBoxes = convertFromYolo(annFilePath, currentImage.getWidth(), currentImage.getHeight());
-            currentEntry.bBoxes = FXCollections.observableArrayList(bBoxes);
+            currentEntry.updateEntries(bBoxes);
+
+            /*Collections.sort(bBoxes, (o1, o2) -> {
+                String o1First = o1.getLabel().substring(0,1).toLowerCase();
+                String o2First = o2.getLabel().substring(0,1).toLowerCase();
+                return o1First.compareTo(o2First);
+            });
+            currentEntry.model = FXCollections.observableArrayList(bBoxes);*/
+
+            //currentEntry.model.clear();
+            //currentEntry.model.addAll(bBoxes);
+            //Collections.sort(currentEntry.model, (o1, o2) -> o1.getLabel().compareTo(o2.getLabel()));
+/*            currentEntry.model.add(new BBox("z", 0, 0, 0, 0));
+            currentEntry.model.add(new BBox("a", 0, 0, 0, 0));
+            currentEntry.model.add(new BBox("s", 0, 0, 0, 0));*/
+
+/*            ObservableList<BBox> observableList = FXCollections.observableArrayList(bBoxes);
+
+
+            SortedList<BBox> sortedList = new SortedList<>( observableList,
+                    (BBox box1, BBox box2) -> box1.getLabel().compareTo(box2.getLabel()));
+
+
+            Collections.sort(bBoxes, (o1, o2) -> o1.getLabel().compareTo(o2.getLabel()));
+            currentEntry.bBoxes = FXCollections.observableArrayList(bBoxes);*/
+        }
+    }
+
+    public void addBBox(BBox bBox) {
+        if(currentEntry != null) {
+            currentEntry.bBoxes.add(bBox);
+            serialize();
         }
     }
 
     public void endDrawingBox(boolean success) {
+        BBox selectedBBox = selectedBBoxProperty.get();
         if(success) {
-        	currentEntry.bBoxes.add(selectedBBoxProperty.get());
+            if(!currentEntry.bBoxes.contains(selectedBBox)) {
+                currentEntry.bBoxes.add(selectedBBox);
+            }
+            else {
+                //refresh view
+                ArrayList<BBox> copy = new ArrayList<>(currentEntry.bBoxes);
+                currentEntry.bBoxes.clear();
+                currentEntry.bBoxes.addAll(copy);
+            }
         } 
         selectedBBoxProperty.set(null);
         serialize();
@@ -196,6 +276,8 @@ public class BBoxManager {
         }
 
         String label = allLabels.get(lblIndex);
+
+
 		double centerX = Double.parseDouble(values[1]);
 		double centerY = Double.parseDouble(values[2]);
 		
@@ -295,12 +377,40 @@ public class BBoxManager {
     }
 
     public class RepositoryEntry {
+        //stupid javafx does not let add you to sorted list
         private ObservableList<BBox> bBoxes;
         private Path path;
 
-        public RepositoryEntry(Path path, List<BBox> bBoxes) {
+        public RepositoryEntry(Path path) {
             this.path = path;
-            this.bBoxes = FXCollections.observableArrayList(bBoxes);
+            //sort by labels
+            bBoxes = FXCollections.observableArrayList(new ArrayList<>());
+            bBoxes.addListener((ListChangeListener<BBox>) c -> {
+                if(c.next()) {
+                    if(c.wasAdded() || c.wasRemoved()) {
+                        sortEntries();
+                    }
+                }
+            });
+        }
+
+        public void updateEntries(List<BBox> bBoxes) {
+            this.bBoxes.clear();
+            for(BBox bBox: bBoxes) {
+                ChangeListener<String> labelListener = (observable, oldValue, newValue) -> {
+                    sortEntries();
+                };
+                bBox.getLabelProperty().addListener(labelListener);
+            }
+            this.bBoxes.addAll(bBoxes);
+        }
+
+        private void sortEntries() {
+            Collections.sort(bBoxes, (o1, o2) -> {
+                String o1First = o1.getLabel().substring(0,1).toLowerCase();
+                String o2First = o2.getLabel().substring(0,1).toLowerCase();
+                return o1First.compareTo(o2First);
+            });
         }
 
         public ObservableList<BBox> getbBoxes() {
@@ -310,5 +420,12 @@ public class BBoxManager {
         public Path getPath() {
             return path;
         }
+    }
+
+    public void setScanImageDir(boolean scanImageDir) {
+        if (fileWatcher != null) {
+            fileWatcher.setNotify(scanImageDir);
+        }
+        this.scanImageDir = scanImageDir;
     }
 }

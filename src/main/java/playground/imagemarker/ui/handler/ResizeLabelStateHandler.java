@@ -1,6 +1,7 @@
 package playground.imagemarker.ui.handler;
 
 import javafx.geometry.Point2D;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import playground.imagemarker.ui.BBox;
@@ -16,7 +17,11 @@ public class ResizeLabelStateHandler extends UIStateHandler {
 	}
 	
 	@Override
-	public void activate(ImageViewManager manager) {		
+	public void activate(ImageViewManager manager, InputEvent inputEvent) {
+        MouseEvent mouseEvent = (MouseEvent)inputEvent;
+        resizeBBox  = BBoxManager.getInstance().getCurrentDrawingBox();
+        BBoxUtil.CornerType resizeCorner = BBoxUtil.getResizeCorner(resizeBBox , mouseEvent);
+        origin = BBoxUtil.getOppositeCorner(resizeCorner, resizeBBox);
 	}
 
 	@Override
@@ -30,17 +35,7 @@ public class ResizeLabelStateHandler extends UIStateHandler {
 
 	@Override
 	public ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent) {
-		ActionState returnState = getActionState();
-		if(origin == null) {
-			resizeBBox  = BBoxManager.getInstance().getCurrentDrawingBox();
-			BBoxUtil.CornerType resizeCorner = BBoxUtil.getResizeCorner(resizeBBox , mouseEvent);
-			origin = BBoxUtil.getOppositeCorner(resizeCorner, resizeBBox);
-		} else {
-			returnState = ActionState.VIEW_LABELS;
-		}
-		
-		mouseEvent.consume();
-		return returnState;
+		return ActionState.VIEW_LABELS;
 	}
 
 	@Override

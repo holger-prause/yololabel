@@ -11,6 +11,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.image.Image;
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.stage.Stage;
@@ -39,7 +40,7 @@ public class ViewLabelStateHandler extends UIStateHandler {
     }
 
     @Override
-    public void activate(ImageViewManager manager) {
+    public void activate(ImageViewManager manager, InputEvent inputEvent) {
         BBoxManager boxManager = BBoxManager.getInstance();
         int repositorySize = boxManager.getRepositorySize();
         if(repositorySize == 0) {
@@ -163,22 +164,19 @@ public class ViewLabelStateHandler extends UIStateHandler {
     public ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent) {
         ActionState returnActionState = getActionState();
         List<BBox> currentViewBoxes = BBoxManager.getInstance().getCurrentEntry().getbBoxes();
-        BBox focusBox = null;
-        
-        focusBox = BBoxUtil.findFocusBBox(currentViewBoxes, mouseEvent);
+        BBox focusBox = BBoxUtil.findFocusBBox(currentViewBoxes, mouseEvent);
         if(focusBox == null) {
         	focusBox = BBoxManager.getInstance().getCurrentDrawingBox();
         }
-                
+
     	if(focusBox != null) {
-    		BBoxUtil.CornerType resizeCorner = BBoxUtil.getResizeCorner(focusBox, mouseEvent);
+            BBoxManager.getInstance().startDrawingBox(focusBox);
+            BBoxUtil.CornerType resizeCorner = BBoxUtil.getResizeCorner(focusBox, mouseEvent);
             if (resizeCorner != null) {
                 returnActionState = ActionState.RESIZE_LABEL;
             } else {
-            	returnActionState = ActionState.DRAG_LABEL;
+                returnActionState = ActionState.DRAG_LABEL;
             }
-            
-        	BBoxManager.getInstance().startDrawingBox(focusBox);
     	}
 
         //paint selection to give feedback about selected box

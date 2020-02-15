@@ -13,14 +13,36 @@ public class PickLabelDialog {
 
 	public static Stage dialogStage;
 	public static boolean success;
-	public boolean show() {
+
+    public enum DialogType {
+        RENAME,
+        COPY,
+        SELECT
+    }
+
+
+
+	public boolean show(DialogType type) {
 		success = false;
 		Stage primaryStage = StageManager.getInstance().getPrimaryStage();	
         dialogStage = new Stage();
         dialogStage.initModality(Modality.APPLICATION_MODAL);
         dialogStage.initStyle(StageStyle.UTILITY);
         dialogStage.initOwner(primaryStage);
-        dialogStage.setTitle("Select Label");
+        switch (type) {
+            case SELECT:
+                dialogStage.setTitle("Select Label");
+                break;
+            case RENAME:
+                dialogStage.setTitle("Rename Label");
+                break;
+            case COPY:
+                dialogStage.setTitle("Copy Label");
+                break;
+            default:
+                throw new RuntimeException("Unsuuported type "+ type);
+        }
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/PickLabelDialog.fxml"));
         try {
 			Parent root = loader.load();

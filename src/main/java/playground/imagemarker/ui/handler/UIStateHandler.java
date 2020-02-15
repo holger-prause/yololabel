@@ -1,5 +1,6 @@
 package playground.imagemarker.ui.handler;
 
+import javafx.scene.input.InputEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 
@@ -12,7 +13,7 @@ public abstract class UIStateHandler {
         this.actionState = actionState;
     }
 
-    public abstract void activate(ImageViewManager manager);
+    public abstract void activate(ImageViewManager manager, InputEvent inputEvent);
     public abstract ActionState handleMouseMoved(ImageViewManager manager, MouseEvent mouseEvent);
     public abstract ActionState handleMouseClicked(ImageViewManager manager, MouseEvent mouseEvent);
     public abstract ActionState handleScrollEvent(ImageViewManager manager, ScrollEvent scrollEvent);
