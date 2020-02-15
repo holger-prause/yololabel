@@ -7,3 +7,4 @@
 *.ipr
 *.iws
 config.properties
+src/test/java/local
