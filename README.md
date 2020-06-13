@@ -10,3 +10,5 @@ How to build and run
 
 
 TODO: Support for other formats: Pascal, etc
+TODO: REWRITE THIS PIECE OF SH.T FROM SCRATCH - KILL IT WITH FIRE!
+-- its really buggy but i did its job at that time
