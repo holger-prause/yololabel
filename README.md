@@ -9,6 +9,6 @@ How to build and run
   or just double click imagemarker-executable.jar
 
 
-TODO: Support for other formats: Pascal, etc
+TODO: Support for other formats: Pascal, etc <br/>
 TODO: REWRITE THIS PIECE OF SH.T FROM SCRATCH - KILL IT WITH FIRE!
 -- its really buggy but i did its job at that time
