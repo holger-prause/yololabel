@@ -12,3 +12,4 @@ How to build and run
 TODO: Support for other formats: Pascal, etc <br/>
 TODO: REWRITE THIS PIECE OF SH.T FROM SCRATCH - KILL IT WITH FIRE!
 -- its really buggy but it did its job at that time
+-- labelimg is a (bad) joke :-(
